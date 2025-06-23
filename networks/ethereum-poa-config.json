@@ -1,0 +1,22 @@
+{
+  "caliper": {
+    "blockchain": "ethereum"
+  },
+  "ethereum": {
+    "url": "ws://localhost:8558",
+    "contractDeployerAddress": "0xa7aAa251DE1DC8a4A84206ffc28D82E568A22277",
+    "fromAddress": "0xa7aAa251DE1DC8a4A84206ffc28D82E568A22277",
+    "contractDeployerAddressPrivateKey": "0x811d6aee437b49baf8b16db2b7177c779b3741f11255ced6910b798eda8e0cc6",
+    "fromAddressPrivateKey": "0x811d6aee437b49baf8b16db2b7177c779b3741f11255ced6910b798eda8e0cc6",
+    "transactionConfirmationBlocks": 2,
+    "contracts": {
+      "simple-storage": {
+        "path": "contracts/abi/SimpleStorage.json",
+        "gas": {
+          "set": 80000,
+          "get": 50000
+        }
+      }
+    }
+  }
+}

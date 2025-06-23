@@ -1,0 +1,17 @@
+{
+  "name": "caliper-automation",
+  "version": "1.0.0",
+  "description": "Automation scripts for running Caliper benchmarks",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "@hyperledger/caliper-cli": "^0.6.0",
+    "ethers": "^6.14.4",
+    "js-yaml": "^4.1.0"
+  }
+}
