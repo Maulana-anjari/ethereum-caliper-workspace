@@ -1,0 +1,32 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model ExperimentResult {
+  id              Int      @id @default(autoincrement())
+  scenarioId      String   // e.g., "A1", "B2"
+  trialNumber     Int      // Uji Coba Ke-#
+  consensus       String   // "PoA" or "PoS"
+  topology        String   // "3S-1NS"
+  blockTime       Int
+  blockGasLimit   BigInt
+  rateController  String
+  targetTPS       Int
+  duration        Int
+  workload        String
+  workers         Int
+  throughput      Float
+  avgLatency      Float
+  minLatency      Float
+  maxLatency      Float
+  success         Int
+  fail            Int
+  avgCPU          Float? // Optional, might not always be collected
+  maxMemory       Float? // Optional
+  timestamp       DateTime @default(now())
+}

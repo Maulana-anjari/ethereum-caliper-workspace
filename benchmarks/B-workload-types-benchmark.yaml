@@ -1,0 +1,59 @@
+test:
+  name: Workload-Type-Comparison
+  description: Membandingkan performa jaringan untuk operasi Tulis (I/O), Baca, dan Komputasi (CPU).
+  workers:
+    number: 3 # Jumlah worker dijaga konstan di 3 untuk perbandingan yang adil
+  rounds:
+    # --- Putaran B1: Uji Tulis Murni (I/O-Intensive) ---
+    - label: B1-write-mint
+      description: Mengukur performa transaksi tulis murni (minting NFT).
+      txDuration: 180 # Durasi lebih lama untuk data yang stabil
+      rateControl:
+        type: fixed-rate
+        opts:
+          # Gunakan TPS Optimal yang ditemukan dari Eksperimen A (misal, 150)
+          tps: 150
+      workload:
+        module: benchmarks/workload/mint-certificate-workload.js
+
+    # --- Putaran B2: Uji Baca Murni (Read-Only) ---
+    - label: B2-read-certificate
+      description: Mengukur performa operasi baca-saja dari state blockchain.
+      txDuration: 180
+      rateControl:
+        type: fixed-rate
+        opts:
+          # Operasi baca sangat cepat, kita bisa gunakan TPS yang sangat tinggi
+          tps: 500
+      workload:
+        module: benchmarks/workload/read-certificate-workload.js
+        arguments:
+          # Asumsi ada 10,000 token yang bisa dibaca.
+          # Angka ini harus lebih besar dari (tps * txDuration) dari tes minting Anda.
+          totalTokens: 10000
+
+    # --- Putaran B3: Uji Komputasi (CPU-Intensive) ---
+    - label: B3-cpu-stress-calculate
+      description: Mengukur performa transaksi yang berat secara komputasi.
+      txDuration: 180
+      rateControl:
+        type: fixed-rate
+        opts:
+          # Gunakan TPS rendah karena setiap transaksi sangat berat dan memakan banyak gas
+          tps: 20
+      workload:
+        module: benchmarks/workload/cpu-stress-test-workload.js
+        arguments:
+          # Jumlah iterasi loop di smart contract. Angka lebih tinggi = lebih berat.
+          iterations: 500
+
+monitors:
+  resource:
+    - module: docker
+      options:
+        interval: 1
+        containers:
+          - all
+      charting:
+        bar:
+          metrics: [all]

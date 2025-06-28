@@ -1,0 +1,21 @@
+test:
+  name: Client-Scalability-Test-1-Worker
+  description: Mengukur performa jaringan dengan beban dari 1 worker.
+  workers:
+    number: 1 # <-- Variabel yang diuji
+  rounds:
+    - label: C1-mint-1-worker
+      description: Uji tulis murni dengan 1 worker pada TPS optimal.
+      txDuration: 180
+      rateControl:
+        type: fixed-rate
+        opts:
+          # Gunakan TPS Optimal yang ditemukan dari Eksperimen A
+          tps: 150
+      workload:
+        module: benchmarks/workload/mint-certificate-workload.js
+monitors:
+  resource:
+    - module: docker
+      options: { interval: 1, containers: [all] }
+      charting: { bar: { metrics: [all] } }

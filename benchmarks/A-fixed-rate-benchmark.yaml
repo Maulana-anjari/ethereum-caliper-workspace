@@ -1,0 +1,56 @@
+# Definisi jangkar (anchor) untuk workload yang berulang
+x-workload-defaults: &workload_defaults
+  module: benchmarks/workload/mint-certificate-workload.js
+
+test:
+  name: Fixed-Rate-Saturation-Test
+  description: Mencari titik jenuh performa minting NFT dengan meningkatkan beban TPS secara bertahap menggunakan fixed-rate.
+  workers:
+    number: 3
+  rounds:
+    - label: A1-mint-50-tps
+      description: Test minting NFT dengan beban 50 TPS.
+      txDuration: 60
+      rateControl:
+        type: fixed-rate
+        opts:
+          tps: 50
+      workload: *workload_defaults
+
+    - label: A2-mint-100-tps
+      description: Test minting NFT dengan beban 100 TPS.
+      txDuration: 60
+      rateControl:
+        type: fixed-rate
+        opts:
+          tps: 100
+      workload: *workload_defaults
+
+    - label: A3-mint-200-tps
+      description: Test minting NFT dengan beban 200 TPS.
+      txDuration: 60
+      rateControl:
+        type: fixed-rate
+        opts:
+          tps: 200
+      workload: *workload_defaults
+
+    - label: A4-mint-300-tps
+      description: Test minting NFT dengan beban 300 TPS (uji beban berlebih).
+      txDuration: 60
+      rateControl:
+        type: fixed-rate
+        opts:
+          tps: 300
+      workload: *workload_defaults
+
+monitors:
+  resource:
+    - module: docker
+      options:
+        interval: 1
+        containers:
+          - all
+      charting:
+        bar:
+          metrics: [all]

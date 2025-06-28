@@ -1,0 +1,12 @@
+global:
+  scrape_interval: 5s # Cek target setiap 5 detik
+
+scrape_configs:
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  - job_name: "pushgateway"
+    # Prometheus akan mengambil metrik yang dikirim Caliper dari Pushgateway
+    static_configs:
+      - targets: ["pushgateway:9091"]

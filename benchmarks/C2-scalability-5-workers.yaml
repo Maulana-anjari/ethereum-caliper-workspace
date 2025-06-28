@@ -1,0 +1,21 @@
+test:
+  name: Client-Scalability-Test-5-Workers
+  description: Mengukur performa jaringan dengan beban dari 5 worker.
+  workers:
+    number: 5 # <-- Variabel yang diuji
+  rounds:
+    - label: C2-mint-5-workers
+      description: Uji tulis murni dengan 5 worker pada TPS optimal.
+      txDuration: 180
+      rateControl:
+        type: fixed-rate
+        opts:
+          # TPS target total tetap sama, Caliper akan membaginya ke 5 worker
+          tps: 150
+      workload:
+        module: benchmarks/workload/mint-certificate-workload.js
+monitors:
+  resource:
+    - module: docker
+      options: { interval: 1, containers: [all] }
+      charting: { bar: { metrics: [all] } }

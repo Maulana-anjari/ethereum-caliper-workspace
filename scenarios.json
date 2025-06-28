@@ -1,0 +1,82 @@
+{
+  "scenarios": {
+    "A0": {
+      "label": "A0-fixed-load-test",
+      "description": "Menemukan throughput maksimum menggunakan fixed-load.",
+      "txDuration": 180,
+      "rateControl": {
+        "type": "fixed-load",
+        "opts": {
+          "transactionLoad": 200,
+          "startTps": 50
+        }
+      },
+      "workload": {
+        "module": "benchmarks/workload/mint-certificate-workload.js"
+      }
+    },
+    "A": {
+      "description": "Eksperimen untuk mencari titik jenuh performa minting NFT dengan meningkatkan beban TPS secara bertahap menggunakan fixed-rate.",
+      "rounds": [
+        { "id": "A1", "tps": 50 },
+        { "id": "A2", "tps": 100 },
+        { "id": "A3", "tps": 150 },
+        { "id": "A4", "tps": 200 },
+        { "id": "A5", "tps": 250 },
+        { "id": "A6", "tps": 300 }
+      ],
+      "commonConfig": {
+        "txDuration": 60,
+        "rateControllerType": "fixed-rate",
+        "workloadModule": "benchmarks/workload/mint-certificate-workload.js"
+      }
+    },
+    "B": {
+      "description": "Membandingkan performa jaringan untuk operasi Tulis (I/O), Baca, dan Komputasi (CPU).",
+      "rounds": [
+        {
+          "id": "B1",
+          "label": "B1-write-mint",
+          "rateTps": "OPTIMAL",
+          "txDuration": 180,
+          "workload": {
+            "module": "benchmarks/workload/mint-certificate-workload.js"
+          }
+        },
+        {
+          "id": "B2",
+          "label": "B2-read-certificate",
+          "rateTps": 500,
+          "txDuration": 180,
+          "workload": {
+            "module": "benchmarks/workload/read-certificate-workload.js",
+            "arguments": { "totalTokens": 20000 }
+          }
+        },
+        {
+          "id": "B3",
+          "label": "B3-cpu-stress-calculate",
+          "rateTps": 20,
+          "txDuration": 180,
+          "workload": {
+            "module": "benchmarks/workload/cpu-stress-test-workload.js",
+            "arguments": { "iterations": 500 }
+          }
+        }
+      ]
+    },
+    "C": {
+      "description": "Eksperimen skalabilitas klien.",
+      "rounds": [
+        { "id": "C1", "workers": 1 },
+        { "id": "C2", "workers": 5 }
+      ],
+      "commonConfig": {
+        "labelPrefix": "mint",
+        "txDuration": 180,
+        "rateTps": "OPTIMAL",
+        "workloadModule": "benchmarks/workload/mint-certificate-workload.js"
+      }
+    }
+  }
+}

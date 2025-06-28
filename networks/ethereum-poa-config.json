@@ -4,18 +4,18 @@
   },
   "ethereum": {
     "url": "ws://localhost:8558",
-    "contractDeployerAddress": "0xa7aAa251DE1DC8a4A84206ffc28D82E568A22277",
-    "fromAddress": "0xa7aAa251DE1DC8a4A84206ffc28D82E568A22277",
-    "contractDeployerAddressPrivateKey": "0x811d6aee437b49baf8b16db2b7177c779b3741f11255ced6910b798eda8e0cc6",
-    "fromAddressPrivateKey": "0x811d6aee437b49baf8b16db2b7177c779b3741f11255ced6910b798eda8e0cc6",
+    "contractDeployerAddress": "0x55348c71b18EA9E4e18A326F1820dAc8fbDf052b",
+    "fromAddress": "0x55348c71b18EA9E4e18A326F1820dAc8fbDf052b",
+    "contractDeployerAddressPrivateKey": "0x9fc61612faf619a3399a12b2364b1e8a2eea042d3989ad61dc94416e24e30b36",
+    "fromAddressPrivateKey": "0x9fc61612faf619a3399a12b2364b1e8a2eea042d3989ad61dc94416e24e30b36",
+    "gasPrice": 1000000000,
     "transactionConfirmationBlocks": 2,
     "contracts": {
-      "simple-storage": {
-        "path": "contracts/abi/SimpleStorage.json",
-        "gas": {
-          "set": 80000,
-          "get": 50000
-        }
+      "CpuStressTest": {
+        "path": "contracts/abi/CpuStressTest.json"
+      },
+      "MintCertificate": {
+        "path": "contracts/abi/MintCertificate.json"
       }
     }
   }

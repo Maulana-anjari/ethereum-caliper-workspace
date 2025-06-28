@@ -1,0 +1,31 @@
+test:
+  name: Fixed-Load-Max-Throughput-Test
+  description: Menemukan throughput maksimum yang bisa dipertahankan oleh jaringan menggunakan fixed-load.
+  workers:
+    number: 3
+  rounds:
+    - label: A0-fixed-load-test
+      description: Menjaga 200 transaksi backlog untuk menemukan TPS maksimum.
+      txDuration: 180 # Gunakan durasi lebih lama agar controller punya waktu untuk stabil
+      rateControl:
+        type: fixed-load
+        opts:
+          # Target: menjaga 200 transaksi yang belum selesai (backlog) di dalam sistem.
+          # Sesuaikan angka ini jika perlu. Angka yang lebih tinggi akan memberi tekanan lebih.
+          transactionLoad: 200
+          # Laju TPS awal untuk memulai tes
+          startTps: 50
+      workload:
+        # Menggunakan workload yang sama dengan tes fixed-rate
+        module: benchmarks/workload/mint-certificate-workload.js
+
+monitors:
+  resource:
+    - module: docker
+      options:
+        interval: 1
+        containers:
+          - all
+      charting:
+        bar:
+          metrics: [all]

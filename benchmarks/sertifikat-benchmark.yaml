@@ -1,0 +1,86 @@
+x-workload-defaults: &workload_defaults
+  module: benchmarks/workload/mint-certificate-workload.js
+
+test:
+  name: Sertifikat-Minting-Saturation-Test
+  description: Mencari titik jenuh performa minting NFT pada jaringan dengan meningkatkan beban TPS secara bertahap.
+  workers:
+    number: 3
+  rounds:
+    - label: mint-50-tps
+      description: Test minting NFT dengan beban 50 TPS.
+      txDuration: 60
+      rateControl:
+        type: fixed-rate
+        opts:
+          tps: 50
+      workload:
+        module: *workload_defaults
+
+    - label: mint-100-tps
+      description: Test minting NFT dengan beban 100 TPS.
+      txDuration: 60
+      rateControl:
+        type: fixed-rate
+        opts:
+          tps: 100
+      workload:
+        module: *workload_defaults
+
+    - label: mint-150-tps
+      description: Test minting NFT dengan beban 150 TPS.
+      txDuration: 60
+      rateControl:
+        type: fixed-rate
+        opts:
+          tps: 150
+      workload:
+        module: *workload_defaults
+
+    - label: mint-200-tps
+      description: Test minting NFT dengan beban 200 TPS.
+      txDuration: 60
+      rateControl:
+        type: fixed-rate
+        opts:
+          tps: 200
+      workload:
+        module: *workload_defaults
+
+    - label: mint-250-tps
+      description: Test minting NFT dengan beban 250 TPS.
+      txDuration: 60
+      rateControl:
+        type: fixed-rate
+        opts:
+          tps: 250
+      workload:
+        module: *workload_defaults
+
+    - label: mint-300-tps
+      description: Test minting NFT dengan beban 300 TPS.
+      txDuration: 60
+      rateControl:
+        type: fixed-rate
+        opts:
+          tps: 300
+      workload:
+        module: *workload_defaults
+
+monitors:
+  transaction:
+    - module: prometheus-push
+      options:
+        pushUrl: "http://pushgateway:9091"
+        pushInterval: 5000
+        defaultLabels:
+          experiment: "sertifikat-minting"
+  resource:
+    - module: docker
+      options:
+        interval: 1
+        containers:
+          - all
+      charting:
+        bar:
+          metrics: [all]

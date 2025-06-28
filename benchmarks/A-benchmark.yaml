@@ -1,0 +1,73 @@
+test:
+  name: Scenario-A-Saturation-Test
+  description: >-
+    Eksperimen untuk mencari titik jenuh performa minting NFT dengan
+    meningkatkan beban TPS secara bertahap menggunakan fixed-rate.
+  workers:
+    number: 3
+  rounds:
+    - label: A1
+      description: Test minting NFT dengan beban 50 TPS.
+      txDuration: 60
+      rateControl:
+        type: fixed-rate
+        opts:
+          tps: 50
+      workload:
+        module: benchmarks/workload/mint-certificate-workload.js
+    - label: A2
+      description: Test minting NFT dengan beban 100 TPS.
+      txDuration: 60
+      rateControl:
+        type: fixed-rate
+        opts:
+          tps: 100
+      workload:
+        module: benchmarks/workload/mint-certificate-workload.js
+    - label: A3
+      description: Test minting NFT dengan beban 150 TPS.
+      txDuration: 60
+      rateControl:
+        type: fixed-rate
+        opts:
+          tps: 150
+      workload:
+        module: benchmarks/workload/mint-certificate-workload.js
+    - label: A4
+      description: Test minting NFT dengan beban 200 TPS.
+      txDuration: 60
+      rateControl:
+        type: fixed-rate
+        opts:
+          tps: 200
+      workload:
+        module: benchmarks/workload/mint-certificate-workload.js
+    - label: A5
+      description: Test minting NFT dengan beban 250 TPS.
+      txDuration: 60
+      rateControl:
+        type: fixed-rate
+        opts:
+          tps: 250
+      workload:
+        module: benchmarks/workload/mint-certificate-workload.js
+    - label: A6
+      description: Test minting NFT dengan beban 300 TPS.
+      txDuration: 60
+      rateControl:
+        type: fixed-rate
+        opts:
+          tps: 300
+      workload:
+        module: benchmarks/workload/mint-certificate-workload.js
+monitors:
+  resource:
+    - module: docker
+      options:
+        interval: 1
+        containers:
+          - all
+      charting:
+        bar:
+          metrics:
+            - all
