@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.15;
 
-contract KeyValueStore {
+contract SimpleStorage {
     mapping(uint256 => string) public records;
 
     // Operasi Tulis (Write)

@@ -4,14 +4,14 @@ pragma solidity 0.8.15;
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.3/contracts/token/ERC721/ERC721.sol";
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.3/contracts/utils/Counters.sol";
 
-contract BenchmarkSertifikat is ERC721 {
+contract MintCertificate is ERC721 {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
 
     // Kita tetap simpan satu state variable untuk disimulasikan
     mapping(uint256 => string) private certificateNumbers;
 
-    constructor() ERC721("Benchmark Sertifikat", "BSRT") {}
+    constructor() ERC721("Mint Certificate", "MCRT") {}
 
     /**
      * @dev Fungsi minting yang disederhanakan untuk benchmark.

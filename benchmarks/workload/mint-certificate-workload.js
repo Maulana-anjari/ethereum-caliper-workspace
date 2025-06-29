@@ -28,7 +28,7 @@ class MintSertifikatWorkload extends WorkloadModuleBase {
 
     const myArgs = {
       // The contract ID as defined in the benchmark config's 'contracts' section
-      contractId: "mint-certificate",
+      contractId: "MintCertificate",
       // The function to call in the smart contract
       verb: "benchmarkMint",
       // Arguments to pass to the function

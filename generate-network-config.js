@@ -32,8 +32,8 @@ const networkConfig = {
     blockchain: "ethereum",
   },
   ethereum: {
-    // URL RPC untuk worker Caliper. Bisa juga dijadikan variabel .env jika perlu.
-    url: "ws://localhost:8558",
+    // Menggunakan URL dari .env atau fallback ke default jika tidak ada
+    url: process.env.NODE_URL || "ws://localhost:8558",
     // Menggunakan kunci yang diekstrak oleh pipeline
     contractDeployerAddress: process.env.ADDRESS,
     fromAddress: process.env.ADDRESS,

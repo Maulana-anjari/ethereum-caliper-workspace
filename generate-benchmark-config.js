@@ -25,74 +25,120 @@ if (!args.scenario || !args.output) {
 try {
   // Baca file konfigurasi skenario utama
   const allScenarios = JSON.parse(fs.readFileSync("./scenarios.json", "utf8"));
-  const targetScenario = allScenarios.scenarios[args.scenario];
-
-  if (!targetScenario) {
-    throw new Error(
-      `Skenario "${args.scenario}" tidak ditemukan di scenarios.json`
-    );
-  }
-
+  let targetScenario = allScenarios.scenarios[args.scenario];
   let finalConfig;
 
-  // Logika untuk membangun konfigurasi berdasarkan tipe skenario
-  if (args.scenario.startsWith("A") && args.scenario !== "A0") {
-    // Untuk Grup A (A1-A4)
-    const rounds = targetScenario.rounds.map((round) => ({
-      label: round.id,
-      description: `Test minting NFT dengan beban ${round.tps} TPS.`,
-      txDuration: targetScenario.commonConfig.txDuration,
-      rateControl: {
-        type: targetScenario.commonConfig.rateControllerType,
-        opts: { tps: round.tps },
-      },
-      workload: { module: targetScenario.commonConfig.workloadModule },
-    }));
-    finalConfig = {
-      test: {
-        name: `Scenario-A-Saturation-Test`,
-        description: targetScenario.description,
-        workers: { number: 3 }, // Asumsi 3 worker untuk tes ini
-        rounds: rounds,
-      },
-    };
-  } else {
-    // Untuk Skenario B, C, dan A0
-    const rounds = targetScenario.rounds.map((round) => {
-      let tps = round.rateTps;
-      // Ganti placeholder "OPTIMAL" dengan nilai yang diberikan
-      if (tps === "OPTIMAL") {
-        if (!args.optimalTps)
-          throw new Error(`Skenario ${round.id} memerlukan --optimalTps.`);
-        tps = parseInt(args.optimalTps);
-      }
-
-      return {
-        label:
-          round.label ||
-          `${round.id}-${targetScenario.commonConfig.labelPrefix}`,
-        description: `Test untuk skenario ${round.id}`,
-        txDuration: round.txDuration || targetScenario.commonConfig.txDuration,
+  if (targetScenario) {
+    // Logika untuk Skenario A, B, dan A0 (yang didefinisikan secara penuh)
+    if (args.scenario.startsWith("A") && args.scenario !== "A0") {
+      const rounds = targetScenario.rounds.map((round) => ({
+        label: round.id,
+        description: `Test minting NFT dengan beban ${round.tps} TPS.`,
+        txDuration: targetScenario.commonConfig.txDuration,
         rateControl: {
-          type: round.rateController?.type || "fixed-rate",
-          opts: round.rateController?.opts || { tps: tps },
+          type: targetScenario.commonConfig.rateControllerType,
+          opts: { tps: round.tps },
         },
-        workload: round.workload || {
-          module: targetScenario.commonConfig.workloadModule,
+        workload: { module: targetScenario.commonConfig.workloadModule },
+      }));
+      finalConfig = {
+        test: {
+          name: `Scenario-A-Saturation-Test`,
+          description: targetScenario.description,
+          workers: { number: 3 },
+          rounds: rounds,
         },
       };
-    });
+    } else {
+      // Untuk Skenario B dan A0
+      const rounds = targetScenario.rounds.map((round) => {
+        let tps = round.rateTps;
+        if (tps === "OPTIMAL") {
+          if (!args.optimalTps)
+            throw new Error(`Skenario ${round.id} memerlukan --optimalTps.`);
+          tps = parseInt(args.optimalTps);
+        }
 
-    const workerCount = targetScenario.rounds[0].workers || 3; // Ambil worker dari round pertama atau default 3
+        return {
+          label:
+            round.label ||
+            `${round.id}-${targetScenario.commonConfig?.labelPrefix || "test"}`,
+          description: `Test untuk skenario ${round.id}`,
+          txDuration:
+            round.txDuration || targetScenario.commonConfig?.txDuration,
+          rateControl: round.rateControl || {
+            type: "fixed-rate",
+            opts: { tps: tps },
+          },
+          workload:
+            round.workload || {
+              module: targetScenario.commonConfig.workloadModule,
+            },
+        };
+      });
 
-    finalConfig = {
-      test: {
-        name: `Scenario-${args.scenario}-Test`,
-        description: targetScenario.description,
-        workers: { number: workerCount },
-        rounds: rounds,
-      },
-    };
+      const workerCount = targetScenario.rounds[0].workers || 3;
+
+      finalConfig = {
+        test: {
+          name: `Scenario-${args.scenario}-Test`,
+          description: targetScenario.description,
+          workers: { number: workerCount },
+          rounds: rounds,
+        },
+      };
+    }
+  } else {
+    // Logika baru untuk sub-skenario seperti C1, C2
+    const parentScenarioKey = args.scenario.charAt(0); // 'C' from 'C1'
+    const parentScenario = allScenarios.scenarios[parentScenarioKey];
+
+    if (parentScenario && parentScenario.rounds) {
+      const roundData = parentScenario.rounds.find(
+        (r) => r.id === args.scenario
+      );
+
+      if (roundData) {
+        const common = parentScenario.commonConfig;
+        let tps = common.rateTps;
+        if (tps === "OPTIMAL") {
+          if (!args.optimalTps)
+            throw new Error(
+              `Skenario ${args.scenario} memerlukan --optimalTps.`
+            );
+          tps = parseInt(args.optimalTps);
+        }
+
+        const round = {
+          label: `${roundData.id}-${common.labelPrefix}`,
+          description: `Uji tulis murni dengan ${roundData.workers} worker pada TPS optimal.`,
+          txDuration: common.txDuration,
+          rateControl: {
+            type: "fixed-rate",
+            opts: { tps: tps },
+          },
+          workload: { module: common.workloadModule },
+        };
+
+        finalConfig = {
+          test: {
+            name: `Client-Scalability-Test-${roundData.workers}-Worker`,
+            description: `Mengukur performa jaringan dengan beban dari ${roundData.workers} worker.`,
+            workers: { number: roundData.workers },
+            rounds: [round],
+          },
+        };
+      } else {
+        throw new Error(
+          `Round "${args.scenario}" tidak ditemukan di dalam skenario "${parentScenarioKey}".`
+        );
+
+      }
+    } else {
+      throw new Error(
+        `Skenario "${args.scenario}" tidak ditemukan di scenarios.json`
+      );
+    }
   }
 
   // Tambahkan monitor ke semua konfigurasi

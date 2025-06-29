@@ -1,37 +1,45 @@
 // File: log-to-db.js
 // Tujuan: Mem-parsing laporan HTML Caliper dan menyimpan hasilnya ke database PostgreSQL via Prisma.
 
-// Mengimpor library yang diperlukan
 const { PrismaClient } = require("@prisma/client");
 const fs = require("fs");
 const cheerio = require("cheerio");
 const yaml = require("js-yaml");
+const path = require("path");
 
-// Inisialisasi Prisma Client
 const prisma = new PrismaClient();
 
 /**
  * Fungsi utama untuk mem-parsing laporan dan menyimpan ke DB.
  * @param {string} reportPath Path ke file report.html.
- * @param {object} metadata Objek berisi metadata eksperimen (konsensus, topologi, dll.).
+ * @param {string} benchmarkConfigPath Path ke file benchmark .yaml yang digunakan.
+ * @param {string} trialNumber Nomor urut uji coba.
  */
-async function main(reportPath, metadata) {
+async function main(reportPath, benchmarkConfigPath, trialNumber) {
   // --- 1. Validasi Input ---
-  if (!reportPath || !metadata) {
-    throw new Error("Path laporan dan metadata eksperimen harus disediakan.");
+  if (!reportPath || !benchmarkConfigPath || !trialNumber) {
+    throw new Error(
+      "Path laporan, path konfigurasi benchmark, dan nomor uji coba harus disediakan."
+    );
   }
   if (!fs.existsSync(reportPath)) {
     throw new Error(`File laporan tidak ditemukan di: ${reportPath}`);
   }
+  if (!fs.existsSync(benchmarkConfigPath)) {
+    throw new Error(
+      `File konfigurasi benchmark tidak ditemukan di: ${benchmarkConfigPath}`
+    );
+  }
 
   console.log(`\n--- [DB Logger] Memproses laporan: ${reportPath} ---`);
+
   // 1. Baca data global dari .env
   const globalMetadata = {
     consensus: process.env.CONSENSUS,
     topology: process.env.TOPOLOGY,
-    blockTime: parseInt(process.env.BLOCK_TIME),
+    blockTime: parseInt(process.env.BLOCK_TIME, 10),
     blockGasLimit: BigInt(process.env.BLOCK_GAS_LIMIT),
-    trialNumber: parseInt(trialNumber),
+    trialNumber: parseInt(trialNumber, 10),
   };
 
   // 2. Baca data benchmark dari file YAML
@@ -47,8 +55,6 @@ async function main(reportPath, metadata) {
   const summaryTable = $('h2:contains("All test results")').next("table");
   const tableRows = summaryTable.find("tbody tr");
 
-  // ... (Logika parsing header dan kolom dari versi sebelumnya) ...
-  // (Untuk singkatnya, logika parsing diasumsikan sama seperti skrip analyze-report.js sebelumnya)
   const headers = [];
   summaryTable
     .find("thead th")
@@ -65,24 +71,21 @@ async function main(reportPath, metadata) {
     const columns = $(element).find("td");
     const label = $(columns[nameIndex]).text().trim();
 
-    // Cari round yang cocok di file YAML untuk mendapatkan detailnya
     const roundConfig = benchmarkConfig.test.rounds.find(
       (r) => r.label === label
     );
     if (!roundConfig) return;
 
     results.push({
-      ...globalMetadata, // Gabungkan metadata global
-      // Parameter dari file YAML
+      ...globalMetadata,
       scenarioId: label,
       rateController: roundConfig.rateControl.type,
       targetTPS: roundConfig.rateControl.opts.tps || 0,
       duration: roundConfig.txDuration,
       workload: path.basename(roundConfig.workload.module),
       workers: workers,
-      // Hasil dari laporan HTML
-      success: parseInt($(columns[succIndex]).text().trim()),
-      fail: parseInt($(columns[failIndex]).text().trim()),
+      success: parseInt($(columns[succIndex]).text().trim(), 10),
+      fail: parseInt($(columns[failIndex]).text().trim(), 10),
       throughput: parseFloat($(columns[throughputIndex]).text().trim()),
       avgLatency: parseFloat($(columns[avgLatencyIndex]).text().trim()),
       minLatency: parseFloat($(columns[minLatencyIndex]).text().trim()),
@@ -99,17 +102,17 @@ async function main(reportPath, metadata) {
 }
 
 // --- Logika untuk Menjalankan Skrip dari Command Line ---
+if (require.main === module) {
+  // Ambil argumen dari command line
+  const [reportPath, benchmarkConfigPath, trialNumber] =
+    process.argv.slice(2);
 
-// Ambil argumen dari command line
-const args = process.argv.slice(2);
-// Contoh: node log-to-db.js ./reports/report-A.html PoA 3S-1NS 15 8000000 1
-const [, , reportPath, benchmarkConfigPath, trialNumber] = args;
-
-main(reportPath, benchmarkConfigPath, trialNumber)
-  .catch((e) => {
-    console.error("❌ Terjadi error dalam proses logging ke database:", e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+  main(reportPath, benchmarkConfigPath, trialNumber)
+    .catch((e) => {
+      console.error("❌ Terjadi error dalam proses logging ke database:", e);
+      process.exit(1);
+    })
+    .finally(async () => {
+      await prisma.$disconnect();
+    });
+}
