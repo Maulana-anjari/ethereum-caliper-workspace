@@ -104,8 +104,7 @@ async function main(reportPath, benchmarkConfigPath, trialNumber) {
 // --- Logika untuk Menjalankan Skrip dari Command Line ---
 if (require.main === module) {
   // Ambil argumen dari command line
-  const [reportPath, benchmarkConfigPath, trialNumber] =
-    process.argv.slice(2);
+  const [reportPath, benchmarkConfigPath, trialNumber] = process.argv.slice(2);
 
   main(reportPath, benchmarkConfigPath, trialNumber)
     .catch((e) => {

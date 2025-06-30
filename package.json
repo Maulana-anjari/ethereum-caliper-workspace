@@ -9,10 +9,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@hyperledger/caliper-cli": "^0.6.0",
     "@prisma/client": "^5.15.0",
     "cheerio": "^1.0.0-rc.12",
     "dotenv": "^16.4.5",
-    "@hyperledger/caliper-cli": "^0.6.0",
     "ethers": "^6.14.4",
     "js-yaml": "^4.1.0"
   },

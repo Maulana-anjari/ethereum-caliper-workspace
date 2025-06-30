@@ -3,3 +3,5 @@ signer1_keystore.json
 report.html
 keystore_for_test.json
 .env
+deployed-contracts.json
+networks/ethereum-poa-config.json

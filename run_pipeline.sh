@@ -65,40 +65,75 @@ log_success "PostgreSQL database is running"
 log_step "KEY EXTRACTION & CONFIGURATION"
 
 log_action "Finding and preparing keystore for key extraction"
-rm -f ./keystore_for_test.json
+KEYSTORE_SRC_DIR="${KEYSTORE_SRC_PATH}"
+TEMP_KEYSTORE_DIR="./temp_keystore"
 
-KEYSTORE_FILES=($(find "${KEYSTORE_SRC_PATH}" -maxdepth 1 -type f))
-NUM_KEYSTORE_FILES=${#KEYSTORE_FILES[@]}
-
-if [ "$NUM_KEYSTORE_FILES" -eq 0 ]; then
-    log_error "No keystore file found in '${KEYSTORE_SRC_PATH}'"
-elif [ "$NUM_KEYSTORE_FILES" -gt 1 ]; then
-    log_error "Multiple keystore files found in '${KEYSTORE_SRC_PATH}'. Please ensure only one is present."
+if [ ! -d "$KEYSTORE_SRC_DIR" ]; then
+    log_error "Source keystore directory not found in '${KEYSTORE_SRC_DIR}'"
 fi
 
-sudo cp "${KEYSTORE_FILES[0]}" ./keystore_for_test.json
-sudo chmod 644 ./keystore_for_test.json
-log_success "Temporary keystore is ready from '${KEYSTORE_FILES[0]}'"
+# Create a temporary directory for keystore files
+rm -rf "${TEMP_KEYSTORE_DIR}"
+mkdir -p "${TEMP_KEYSTORE_DIR}"
 
-log_action "Extracting address & private key"
-KEY_OUTPUT=$(node getPrivateKey.js ./keystore_for_test.json ${KEYSTORE_PASSWORD})
-ADDRESS=$(echo "$KEY_OUTPUT" | grep "Address" | cut -d ':' -f 2 | tr -d ' ')
-PRIVATE_KEY=$(echo "$KEY_OUTPUT" | grep "Private Key" | cut -d ':' -f 2 | tr -d ' ')
-if [ -z "$PRIVATE_KEY" ]; then
-    log_error "Failed to extract private key"
+# Copy keystore files using sudo and change permissions
+log_action "Copying keystore files to a temporary location"
+sudo cp "${KEYSTORE_SRC_DIR}"/UTC--* "${TEMP_KEYSTORE_DIR}/"
+sudo chmod 644 "${TEMP_KEYSTORE_DIR}"/UTC--*
+log_success "Keystore files are ready in a temporary directory."
+
+log_action "Extracting all addresses & private keys"
+ACCOUNTS_JSON=$(node getPrivateKey.js "${TEMP_KEYSTORE_DIR}" "${KEYSTORE_PASSWORD}")
+if [ -z "$ACCOUNTS_JSON" ]; then
+    # Clean up temp dir before exiting on error
+    rm -rf "${TEMP_KEYSTORE_DIR}"
+    log_error "Failed to extract private keys"
 fi
+
+# Clean up the temporary keystore directory immediately after use
+rm -rf "${TEMP_KEYSTORE_DIR}"
+log_success "Cleaned up temporary keystore files."
+
+# Simpan JSON akun ke .env agar bisa diakses oleh skrip Node.js lain
+# Hapus entri lama jika ada dan tambahkan yang baru
+sed -i '/^ACCOUNTS_JSON=/d' .env
+echo "ACCOUNTS_JSON='${ACCOUNTS_JSON}'" >> .env
+export ACCOUNTS_JSON # Ekspor variabel agar tersedia di sub-shell
+
+# Ekstrak alamat utama (pertama) untuk deployment
+MAIN_ADDRESS=$(echo "$ACCOUNTS_JSON" | jq -r '.[0].address')
+MAIN_PRIVATE_KEY=$(echo "$ACCOUNTS_JSON" | jq -r '.[0].privateKey')
+
 sed -i '/^ADDRESS=/d' .env
 sed -i '/^PRIVATE_KEY=/d' .env
 echo "" >> .env
-echo "ADDRESS=${ADDRESS}" >> .env
-echo "PRIVATE_KEY=${PRIVATE_KEY}" >> .env
-export $(grep -v '^#' .env | xargs) # Reload .env
-log_success "Extracted keys and updated .env file"
-log_info "Address: ${ADDRESS}"
+echo "ADDRESS=${MAIN_ADDRESS}" >> .env
+echo "PRIVATE_KEY=${MAIN_PRIVATE_KEY}" >> .env
+# Export the new main address and key directly for subsequent script steps
+export ADDRESS=${MAIN_ADDRESS}
+export PRIVATE_KEY=${MAIN_PRIVATE_KEY}
 
-log_action "Generating Caliper network configuration"
+log_success "Extracted all keys and updated .env file"
+log_info "Total accounts found: $(echo "$ACCOUNTS_JSON" | jq 'length')"
+log_info "Main address for deployment: ${MAIN_ADDRESS}"
+
+log_step "CONTRACT DEPLOYMENT & NETWORK CONFIG"
+
+log_action "Deleting old deployed contracts json"
+rm -f ./deployed-contracts.json
+log_success "Old deployed contracts json removed."
+
+log_action "Deploying contracts via custom script"
+node deploy-contracts.js
+log_success "Contracts deployed, addresses saved to deployed-contracts.json."
+
+log_action "Deleting old network config to ensure regeneration"
+rm -f ./networks/ethereum-poa-config.json
+log_success "Old network config removed."
+
+log_action "Generating new network configuration for pre-deployed contracts"
 node generate-network-config.js
-log_success "Network configuration generated"
+log_success "Network config generated."
 
 # --- Generic function to run a benchmark set ---
 run_benchmark_set() {
@@ -118,6 +153,7 @@ run_benchmark_set() {
         --caliper-networkconfig networks/ethereum-poa-config.json \
         --caliper-benchconfig ${BENCHMARK_CONFIG_FILE} \
         --caliper-report-path ${REPORT_PATH} \
+        --caliper-flow-skip-install \
         ${CALIPER_RUN_ARGS}
 
     log_action "Logging results from ${C_CYAN}${REPORT_PATH}${C_YELLOW} to database"

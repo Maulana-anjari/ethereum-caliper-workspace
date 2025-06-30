@@ -10,6 +10,41 @@ class MintSertifikatWorkload extends WorkloadModuleBase {
   constructor() {
     super();
     this.txIndex = 0;
+    this.accounts = [];
+  }
+
+  /**
+   * Initializes the workload module.
+   * @param {number} workerIndex The 0-based index of the worker instance.
+   * @param {number} totalWorkers The total number of workers.
+   * @param {number} roundIndex The 0-based index of the current round.
+   * @param {object} roundArguments The user-provided arguments for the round from the benchmark configuration file.
+   * @param {ConnectorBase} sutAdapter The adapter of the underlying SUT.
+   * @param {object} sutContext The custom context object provided by the SUT adapter.
+   */
+  async initializeWorkloadModule(
+    workerIndex,
+    totalWorkers,
+    roundIndex,
+    roundArguments,
+    sutAdapter,
+    sutContext
+  ) {
+    await super.initializeWorkloadModule(
+      workerIndex,
+      totalWorkers,
+      roundIndex,
+      roundArguments,
+      sutAdapter,
+      sutContext
+    );
+    // Fetch the list of accounts from the SUT adapter's web3 instance
+    this.accounts = await this.sutAdapter.web3.eth.getAccounts();
+    if (this.accounts.length === 0) {
+      throw new Error(
+        `Worker ${this.workerIndex}: No accounts found in the SUT adapter.`
+      );
+    }
   }
 
   /**
@@ -19,25 +54,21 @@ class MintSertifikatWorkload extends WorkloadModuleBase {
   async submitTransaction() {
     this.txIndex++;
 
-    // Get the address of the current worker to use as the recipient.
-    const recipientAddress = this.worker.getAddress();
+    // Use an account from the list based on the worker's index
+    const recipientAddress =
+      this.accounts[this.workerIndex % this.accounts.length];
 
     // Create a unique ID for each new token to ensure each transaction is unique.
-    // We combine the worker index with the transaction index for global uniqueness.
     const uniqueId = this.workerIndex * 1000000 + this.txIndex;
 
     const myArgs = {
-      // The contract ID as defined in the benchmark config's 'contracts' section
-      contractId: "MintCertificate",
-      // The function to call in the smart contract
+      contract: "MintCertificate",
       verb: "benchmarkMint",
-      // Arguments to pass to the function
       args: [recipientAddress, uniqueId],
-      // This is a write transaction, so readOnly is false
       readOnly: false,
+      from: this.accounts[this.workerIndex % this.accounts.length],
     };
 
-    // Submit the transaction to the SUT (System Under Test)
     await this.sutAdapter.sendRequests(myArgs);
   }
 }

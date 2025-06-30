@@ -1,65 +1,112 @@
 // File: generate-network-config.js
-// Tujuan: Membuat file network config Caliper secara dinamis dari file .env
+// Tujuan: Membuat network config untuk kontrak yang SUDAH di-deploy.
 
-require("dotenv").config(); // Memuat semua variabel dari .env
+require("dotenv").config();
 const fs = require("fs");
 const path = require("path");
 
-console.log("Generating Caliper network configuration file...");
+console.log(
+  "Generating Caliper network configuration for pre-deployed contracts..."
+);
 
-// Membangun daftar kontrak dari variabel .env
-// Pola ini memungkinkan kita menambah kontrak baru hanya dengan mengubah .env
+// --- Baca Alamat Kontrak yang Sudah Di-deploy ---
+const deployedContractsPath = "./deployed-contracts.json";
+if (!fs.existsSync(deployedContractsPath)) {
+  console.error(
+    `❌ Error: File alamat ${deployedContractsPath} tidak ditemukan. Jalankan skrip deployment terlebih dahulu.`
+  );
+  process.exit(1);
+}
+const deployedAddresses = JSON.parse(
+  fs.readFileSync(deployedContractsPath, "utf8")
+);
+console.log(">> Successfully read deployed contract addresses.");
+
+// --- Bangun Konfigurasi Kontrak dengan Alamat dan ABI ---
 const contracts = {};
-// Cari semua variabel .env yang cocok dengan pola CONTRACT_NAME_...
-for (const key in process.env) {
-  if (key.startsWith("CONTRACT_NAME_")) {
-    const contractName = process.env[key];
-    const contractSuffix = key.replace("CONTRACT_NAME_", "");
-    const contractPathKey = `CONTRACT_DEFINITION_PATH_${contractSuffix}`;
+for (const contractName in deployedAddresses) {
+  const contractAddress = deployedAddresses[contractName];
+  // Asumsi file ABI Anda ada di 'contracts/abi/'. Sesuaikan jika perlu.
+  const abiPath = path.join(
+    __dirname,
+    "contracts",
+    "abi",
+    `${contractName}.json`
+  );
 
-    if (process.env[contractPathKey]) {
-      contracts[contractName] = {
-        path: process.env[contractPathKey],
-      };
-      console.log(`- Found and added contract: ${contractName}`);
-    }
+  if (!fs.existsSync(abiPath)) {
+    console.error(
+      `❌ Error: File ABI untuk ${contractName} tidak ditemukan di ${abiPath}`
+    );
+    continue; // Lanjut ke kontrak berikutnya
   }
+
+  const abiJson = JSON.parse(fs.readFileSync(abiPath, "utf8"));
+
+  const contractInfo = {
+    address: contractAddress,
+    abi: abiJson.abi,
+  };
+
+  // Sesuaikan gas limit berdasarkan nama kontrak
+  if (contractName === "CpuStressTest") {
+    contractInfo.gas = {
+      calculate: 500000,
+    };
+  } else if (contractName === "MintCertificate") {
+    contractInfo.gas = {
+      benchmarkMint: 800000,
+    };
+  } else {
+    // Fallback untuk kontrak lain jika diperlukan
+    contractInfo.gas = {
+      benchmarkMint: 300000,
+      calculate: 500000,
+    };
+  }
+
+  contracts[contractName] = contractInfo;
+  console.log(
+    `- Added pre-deployed config for: ${contractName} at ${contractAddress}`
+  );
 }
 
-// Struktur dasar dari file konfigurasi jaringan
+// --- Struktur Final Konfigurasi Jaringan ---
+const accounts = JSON.parse(process.env.ACCOUNTS_JSON);
+
+// Ambil akun pertama sebagai identitas utama untuk deployment/setup
+const mainAccount = accounts[0];
+
+// Siapkan array 'wallets' untuk semua kunci privat yang akan digunakan oleh worker
+const wallets = accounts.map(acc => ({
+  privateKey: acc.privateKey
+}));
+
 const networkConfig = {
   caliper: {
     blockchain: "ethereum",
   },
   ethereum: {
-    // Menggunakan URL dari .env atau fallback ke default jika tidak ada
-    url: process.env.NODE_URL || "ws://localhost:8558",
-    // Menggunakan kunci yang diekstrak oleh pipeline
-    contractDeployerAddress: process.env.ADDRESS,
-    fromAddress: process.env.ADDRESS,
-    contractDeployerAddressPrivateKey: process.env.PRIVATE_KEY,
-    fromAddressPrivateKey: process.env.PRIVATE_KEY,
-    // Atur gas price secara eksplisit. Gunakan nilai yang cukup tinggi.
-    // 1 Gwei (1,000,000,000 Wei) adalah nilai yang umum dan aman.
-    gasPrice: 1000000000,
-    // Jumlah blok konfirmasi sebelum transaksi dianggap final
-    transactionConfirmationBlocks: 2,
-    // Daftar kontrak yang sudah kita bangun secara dinamis
+    url: process.env.NODE_URL,
+    // fromAddress dan private key utama hanya untuk setup awal jika diperlukan
+    fromAddress: mainAccount.address,
+    fromAddressPrivateKey: mainAccount.privateKey,
+    // 'wallets' digunakan untuk menyediakan identitas unik bagi setiap worker Caliper
+    wallets: wallets,
+    transactionConfirmationBlocks: parseInt(process.env.TX_CONFIRM_BLOCKS) || 2,
     contracts: contracts,
   },
 };
 
+// ... (logika untuk menulis file ke networks/ethereum-poa-config.json tetap sama) ...
 try {
-  // Pastikan direktori 'networks' ada
-  if (!fs.existsSync("./networks")) {
-    fs.mkdirSync("./networks");
-  }
-  // Tulis file konfigurasi
   fs.writeFileSync(
     "./networks/ethereum-poa-config.json",
     JSON.stringify(networkConfig, null, 2)
   );
-  console.log('\n✅ File "networks/ethereum-poa-config.json" berhasil dibuat.');
+  console.log(
+    '\n✅ File "networks/ethereum-poa-config.json" untuk kontrak pre-deployed berhasil dibuat.'
+  );
 } catch (error) {
   console.error("\n❌ Gagal membuat file konfigurasi jaringan:", error);
   process.exit(1);
