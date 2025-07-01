@@ -31,19 +31,19 @@ function main() {
 
     console.log(`\n--- Membaca dan Mem-parsing ${reportPath} ---`);
 
-    const summaryTable = $('h2:contains("All test results")').next("table");
+    const summaryTable = $('#benchmarksummary table');
     if (summaryTable.length === 0) {
       throw new Error(
-        'Tabel "All test results" tidak ditemukan di dalam laporan HTML.'
+        'Tabel "Summary of performance metrics" tidak ditemukan di dalam laporan HTML.'
       );
     }
 
-    const tableRows = summaryTable.find("tbody tr");
-
     const headers = [];
     summaryTable
-      .find("thead th")
+      .find("thead th, tr:first-child th")
       .each((i, el) => headers.push($(el).text().trim()));
+
+    const tableRows = summaryTable.find("tr").slice(1);
 
     const nameIndex = headers.findIndex((h) => h.startsWith("Name"));
     const throughputIndex = headers.findIndex((h) =>
@@ -52,16 +52,32 @@ function main() {
     const avgLatencyIndex = headers.findIndex((h) =>
       h.startsWith("Avg Latency")
     );
+    
+    if (nameIndex === -1 || throughputIndex === -1 || avgLatencyIndex === -1) {
+        throw new Error('Kolom yang diperlukan (Name, Throughput, Avg Latency) tidak ditemukan di tabel ringkasan.');
+    }
+
+    const benchmarkInfo = $('#benchmarkInfo').text();
+    const tpsMap = {};
+    const roundRegex = /- label:\s*(A\d+)[\s\S]*?rateControl:[\s\S]*?tps:\s*(\d+)/g;
+    let match;
+    while ((match = roundRegex.exec(benchmarkInfo)) !== null) {
+        const label = match[1];
+        const tps = parseInt(match[2], 10);
+        tpsMap[label] = tps;
+    }
 
     tableRows.each((index, element) => {
       const columns = $(element).find("td");
-      const label = $(columns[nameIndex]).text().trim();
-      const tpsMatch = label.match(/(\d+)-tps/);
+      if (columns.length === 0) return;
 
-      if (label.startsWith("A") && tpsMatch) {
+      const label = $(columns[nameIndex]).text().trim();
+      const targetTps = tpsMap[label];
+
+      if (label.startsWith("A") && targetTps !== undefined) {
         results.push({
           Label: label,
-          TargetTPS: parseFloat(tpsMatch[1]),
+          TargetTPS: targetTps,
           Throughput: parseFloat($(columns[throughputIndex]).text().trim()),
           AvgLatency: parseFloat($(columns[avgLatencyIndex]).text().trim()),
         });

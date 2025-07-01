@@ -52,12 +52,14 @@ async function main(reportPath, benchmarkConfigPath, trialNumber) {
   const htmlContent = fs.readFileSync(reportPath, "utf8");
   const $ = cheerio.load(htmlContent);
   const results = [];
-  const summaryTable = $('h2:contains("All test results")').next("table");
-  const tableRows = summaryTable.find("tbody tr");
+  const summaryTable = $("#benchmarksummary table");
+  const tableRows = summaryTable.find("tr").slice(1);
 
   const headers = [];
   summaryTable
-    .find("thead th")
+    .find("tr")
+    .first()
+    .find("th")
     .each((i, el) => headers.push($(el).text().trim()));
   const nameIndex = headers.findIndex((h) => h.startsWith("Name"));
   const succIndex = headers.findIndex((h) => h.startsWith("Succ"));

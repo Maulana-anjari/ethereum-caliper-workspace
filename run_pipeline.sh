@@ -94,22 +94,19 @@ fi
 rm -rf "${TEMP_KEYSTORE_DIR}"
 log_success "Cleaned up temporary keystore files."
 
-# Simpan JSON akun ke .env agar bisa diakses oleh skrip Node.js lain
-# Hapus entri lama jika ada dan tambahkan yang baru
-sed -i '/^ACCOUNTS_JSON=/d' .env
-echo "ACCOUNTS_JSON='${ACCOUNTS_JSON}'" >> .env
-export ACCOUNTS_JSON # Ekspor variabel agar tersedia di sub-shell
-
 # Ekstrak alamat utama (pertama) untuk deployment
 MAIN_ADDRESS=$(echo "$ACCOUNTS_JSON" | jq -r '.[0].address')
 MAIN_PRIVATE_KEY=$(echo "$ACCOUNTS_JSON" | jq -r '.[0].privateKey')
 
+sed -i '/^ACCOUNTS_JSON=/d' .env
 sed -i '/^ADDRESS=/d' .env
 sed -i '/^PRIVATE_KEY=/d' .env
 echo "" >> .env
+echo "ACCOUNTS_JSON='${ACCOUNTS_JSON}'" >> .env
 echo "ADDRESS=${MAIN_ADDRESS}" >> .env
 echo "PRIVATE_KEY=${MAIN_PRIVATE_KEY}" >> .env
 # Export the new main address and key directly for subsequent script steps
+export ACCOUNTS_JSON=${ACCOUNTS_JSON} # Ekspor variabel agar tersedia di sub-shell
 export ADDRESS=${MAIN_ADDRESS}
 export PRIVATE_KEY=${MAIN_PRIVATE_KEY}
 
