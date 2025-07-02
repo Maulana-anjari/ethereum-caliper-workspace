@@ -78,8 +78,8 @@ const accounts = JSON.parse(process.env.ACCOUNTS_JSON);
 const mainAccount = accounts[0];
 
 // Siapkan array 'wallets' untuk semua kunci privat yang akan digunakan oleh worker
-const wallets = accounts.map(acc => ({
-  privateKey: acc.privateKey
+const wallets = accounts.map((acc) => ({
+  privateKey: acc.privateKey,
 }));
 
 const networkConfig = {
@@ -98,14 +98,17 @@ const networkConfig = {
   },
 };
 
-// ... (logika untuk menulis file ke networks/ethereum-poa-config.json tetap sama) ...
+// --- Tulis File Konfigurasi ---
+const consensus = process.env.CONSENSUS;
+const networkConfigFile = consensus
+  ? `ethereum-${consensus.toLowerCase()}-config.json`
+  : "ethereum-config.json";
+const networkConfigPath = path.join("./networks", networkConfigFile);
+
 try {
-  fs.writeFileSync(
-    "./networks/ethereum-poa-config.json",
-    JSON.stringify(networkConfig, null, 2)
-  );
+  fs.writeFileSync(networkConfigPath, JSON.stringify(networkConfig, null, 2));
   console.log(
-    '\n✅ File "networks/ethereum-poa-config.json" untuk kontrak pre-deployed berhasil dibuat.'
+    `\n✅ File "${networkConfigPath}" untuk kontrak pre-deployed berhasil dibuat.`
   );
 } catch (error) {
   console.error("\n❌ Gagal membuat file konfigurasi jaringan:", error);

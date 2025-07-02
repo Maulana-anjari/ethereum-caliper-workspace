@@ -10,6 +10,16 @@ const path = require("path");
 const prisma = new PrismaClient();
 
 /**
+ * Helper to parse a string to a float, returning 0 if the result is NaN.
+ * @param {string} str The string to parse.
+ * @returns {number} The parsed float or 0.
+ */
+const parseFloatOrZero = (str) => {
+  const value = parseFloat(str);
+  return isNaN(value) ? 0 : value;
+};
+
+/**
  * Fungsi utama untuk mem-parsing laporan dan menyimpan ke DB.
  * @param {string} reportPath Path ke file report.html.
  * @param {string} benchmarkConfigPath Path ke file benchmark .yaml yang digunakan.
@@ -68,6 +78,7 @@ async function main(reportPath, benchmarkConfigPath, trialNumber) {
   const avgLatencyIndex = headers.findIndex((h) => h.startsWith("Avg Latency"));
   const minLatencyIndex = headers.findIndex((h) => h.startsWith("Min Latency"));
   const maxLatencyIndex = headers.findIndex((h) => h.startsWith("Max Latency"));
+  const durationIndex = headers.findIndex((h) => h.startsWith("Duration"));
 
   tableRows.each((index, element) => {
     const columns = $(element).find("td");
@@ -78,20 +89,28 @@ async function main(reportPath, benchmarkConfigPath, trialNumber) {
     );
     if (!roundConfig) return;
 
+    let duration = 0;
+    if (durationIndex !== -1) {
+      const durationStr = $(columns[durationIndex]).text().trim();
+      duration = parseInt(durationStr.replace("s", ""), 10);
+    } else if (roundConfig.txDuration) {
+      duration = roundConfig.txDuration;
+    }
+
     results.push({
       ...globalMetadata,
       scenarioId: label,
       rateController: roundConfig.rateControl.type,
       targetTPS: roundConfig.rateControl.opts.tps || 0,
-      duration: roundConfig.txDuration,
+      duration: duration,
       workload: path.basename(roundConfig.workload.module),
       workers: workers,
       success: parseInt($(columns[succIndex]).text().trim(), 10),
       fail: parseInt($(columns[failIndex]).text().trim(), 10),
-      throughput: parseFloat($(columns[throughputIndex]).text().trim()),
-      avgLatency: parseFloat($(columns[avgLatencyIndex]).text().trim()),
-      minLatency: parseFloat($(columns[minLatencyIndex]).text().trim()),
-      maxLatency: parseFloat($(columns[maxLatencyIndex]).text().trim()),
+      throughput: parseFloatOrZero($(columns[throughputIndex]).text().trim()),
+      avgLatency: parseFloatOrZero($(columns[avgLatencyIndex]).text().trim()),
+      minLatency: parseFloatOrZero($(columns[minLatencyIndex]).text().trim()),
+      maxLatency: parseFloatOrZero($(columns[maxLatencyIndex]).text().trim()),
     });
   });
 

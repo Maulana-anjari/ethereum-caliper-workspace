@@ -18,12 +18,16 @@
     "A": {
       "description": "Eksperimen untuk mencari titik jenuh performa minting NFT dengan meningkatkan beban TPS secara bertahap menggunakan fixed-rate.",
       "rounds": [
-        { "id": "A1", "tps": 50 },
-        { "id": "A2", "tps": 100 },
-        { "id": "A3", "tps": 150 },
-        { "id": "A4", "tps": 200 },
-        { "id": "A5", "tps": 250 },
-        { "id": "A6", "tps": 300 }
+        { "id": "A1", "tps": 5 },
+        { "id": "A2", "tps": 10 },
+        { "id": "A3", "tps": 15 },
+        { "id": "A4", "tps": 20 },
+        { "id": "A5", "tps": 25 },
+        { "id": "A6", "tps": 30 },
+        { "id": "A7", "tps": 35 },
+        { "id": "A8", "tps": 40 },
+        { "id": "A9", "tps": 45 },
+        { "id": "A10", "tps": 50 }
       ],
       "commonConfig": {
         "txDuration": 60,

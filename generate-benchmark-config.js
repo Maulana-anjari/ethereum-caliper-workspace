@@ -49,7 +49,7 @@ try {
           rounds: rounds,
         },
       };
-    } else {
+    } else if (targetScenario.rounds) {
       // Untuk Skenario B dan A0
       const rounds = targetScenario.rounds.map((round) => {
         let tps = round.rateTps;
@@ -70,10 +70,9 @@ try {
             type: "fixed-rate",
             opts: { tps: tps },
           },
-          workload:
-            round.workload || {
-              module: targetScenario.commonConfig.workloadModule,
-            },
+          workload: round.workload || {
+            module: targetScenario.commonConfig.workloadModule,
+          },
         };
       });
 
@@ -85,6 +84,24 @@ try {
           description: targetScenario.description,
           workers: { number: workerCount },
           rounds: rounds,
+        },
+      };
+    } else {
+      // Logika untuk skenario single-round seperti A0
+      finalConfig = {
+        test: {
+          name: `Scenario-${args.scenario}-Test`,
+          description: targetScenario.description,
+          workers: { number: targetScenario.workers || 3 },
+          rounds: [
+            {
+              label: targetScenario.label,
+              description: targetScenario.description,
+              txDuration: targetScenario.txDuration,
+              rateControl: targetScenario.rateControl,
+              workload: targetScenario.workload,
+            },
+          ],
         },
       };
     }
@@ -132,7 +149,6 @@ try {
         throw new Error(
           `Round "${args.scenario}" tidak ditemukan di dalam skenario "${parentScenarioKey}".`
         );
-
       }
     } else {
       throw new Error(
