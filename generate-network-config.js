@@ -87,7 +87,7 @@ const networkConfig = {
     blockchain: "ethereum",
   },
   ethereum: {
-    url: process.env.NODE_URL,
+    url: process.env.BLOCKCHAIN_NODE_URL,
     // fromAddress dan private key utama hanya untuk setup awal jika diperlukan
     fromAddress: mainAccount.address,
     fromAddressPrivateKey: mainAccount.privateKey,

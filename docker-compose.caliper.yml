@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  caliper-db:
+    image: postgres:14
+    container_name: caliper_db
+    environment:
+      POSTGRES_DB: \${POSTGRES_DB:-caliper_db}
+      POSTGRES_USER: \${POSTGRES_USER:-caliper_user}
+      POSTGRES_PASSWORD: \${POSTGRES_PASSWORD:-YourStrongPassword}
+    volumes:
+      - caliper_db_data:/var/lib/postgresql/data
+    networks:
+      - caliper_internal_net
+    restart: unless-stopped
+
+  caliper-benchmark:
+    build:
+      context: .
+      dockerfile: Dockerfile # We will create this next
+    container_name: caliper_benchmark
+    depends_on:
+      - caliper-db
+    volumes:
+      # Mount the entire workspace to access scripts and contracts
+      - ./:/hyperledger/caliper/workspace
+      # Mount the blockchain project to access its keystore
+      - ../blockchain-poa-geth:/blockchain-poa-geth:ro
+    environment:
+      # Pass all environment variables from the .env file
+      - \$(cat .env | grep -v '^#' | xargs)
+      # Override specific variables for the container environment
+      - PGHOST=caliper-db
+      - BLOCKCHAIN_NODE_URL=http://nonsigner1:8545
+    networks:
+      - caliper_internal_net
+      - blockchain_net # External network from the blockchain stack
+    # The command to run when the container starts
+    command: ["./run_pipeline.sh"]
+
+networks:
+  caliper_internal_net:
+    driver: overlay
+    attachable: true
+  blockchain_net:
+    name: \${COMPOSE_PROJECT_NAME:-blockchain_sut}_net # Must match the blockchain stack's network name
+    external: true
+
+volumes:
+  caliper_db_data:
+    driver: local # Or use NFS for distributed persistence if needed
