@@ -12,7 +12,26 @@ if (nodeUrl.startsWith('ws')) {
 } else {
   provider = new ethers.JsonRpcProvider(nodeUrl);
 }
-const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
+
+// Prefer the first account from ACCOUNTS_JSON (exported by run_pipeline.sh),
+// fall back to PRIVATE_KEY from .env if ACCOUNTS_JSON is not provided.
+let selectedPrivateKey = process.env.PRIVATE_KEY;
+try {
+  if (process.env.ACCOUNTS_JSON) {
+    const accounts = JSON.parse(process.env.ACCOUNTS_JSON);
+    if (Array.isArray(accounts) && accounts.length > 0 && accounts[0].privateKey) {
+      selectedPrivateKey = accounts[0].privateKey;
+    }
+  }
+} catch (e) {
+  // If parsing fails, keep selectedPrivateKey as is.
+}
+
+if (!selectedPrivateKey) {
+  throw new Error('No private key available. Set ACCOUNTS_JSON or PRIVATE_KEY in env.');
+}
+
+const wallet = new ethers.Wallet(selectedPrivateKey, provider);
 
 async function main() {
   console.log('Deploying contracts...');

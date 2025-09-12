@@ -4,17 +4,17 @@
   },
   "ethereum": {
     "url": "ws://localhost:8558",
-    "fromAddress": "0xe9b1eD1BecC28Ef3666977EEfBc67Df6aedCaAe3",
-    "fromAddressPrivateKey": "0xa368c38108c7d749fbcea9850865c6008988bdeafc87fec0b522ff8f142dfe96",
+    "fromAddress": "0x5F9882C7BD416C866076917507b2f9B6E3dDF709",
+    "fromAddressPrivateKey": "0x4bbbc7e90b443f2c9bafb3a8c3a5cd23ad13a33d2ae70451bc5e3a03d0020a8f",
     "wallets": [
       {
-        "privateKey": "0xa368c38108c7d749fbcea9850865c6008988bdeafc87fec0b522ff8f142dfe96"
+        "privateKey": "0x4bbbc7e90b443f2c9bafb3a8c3a5cd23ad13a33d2ae70451bc5e3a03d0020a8f"
       }
     ],
     "transactionConfirmationBlocks": 2,
     "contracts": {
       "MintCertificate": {
-        "address": "0xf27173cEd5b388A1C4594C1aCB12df35157305Cc",
+        "address": "0xE9676dA7D91C518Bbff48eC5B2A9F89464Ff5404",
         "abi": [
           {
             "inputs": [],
@@ -381,7 +381,7 @@
         }
       },
       "CpuStressTest": {
-        "address": "0xD768a4C0cf49255bd669b824d5979BEf1e3Fed2F",
+        "address": "0xab15faa7a97720B239f17a813e36eFCd0e398595",
         "abi": [
           {
             "inputs": [
