@@ -13,7 +13,7 @@
     "@prisma/client": "^5.15.0",
     "cheerio": "^1.0.0-rc.12",
     "dotenv": "^16.4.5",
-    "ethers": "^6.14.4",
+    "ethers": "^6.15.0",
     "js-yaml": "^4.1.0"
   },
   "devDependencies": {
