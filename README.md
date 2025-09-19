@@ -8,6 +8,11 @@ jq terpasang (untuk script).
 Jaringan blockchain Geth PoA/PoS sudah jalan. Untuk PoA, jalankan dulu project tetangga blockchain-poa-geth agar network blockchain_sut_net terbentuk dan node nonsigner1 tersedia.
 Sebelum Mulai
 
+Konfigurasi pipeline kini dibaca dari environment:
+- `CORE_SCENARIOS` berisi daftar ID skenario (mis. `A0,A,B,C,LAM`).
+- `EXPERIMENT_VARIANTS` opsional untuk menjalankan paket yang sama pada beberapa topologi/beban; jika diisi, pipeline akan mencari file `variants/<nama>.env` untuk override per varian.
+- `OPTIMAL_TPS_OVERRIDE` (opsional) memaksa nilai TPS optimal jika ingin melewati analisis skenario A.
+
 Install dependency: cd ethereum-caliper-workspace && npm install
 Pastikan .env sudah benar:
 CONSENSUS sesuai jaringan (PoA/PoS).
