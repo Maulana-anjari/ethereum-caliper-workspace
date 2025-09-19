@@ -71,4 +71,6 @@ Tips & Masalah Umum
 Kontrak gagal deploy: pastikan akun punya ETH di jaringan Anda, PRIVATE_KEY sesuai, dan NODE_URL/BLOCKCHAIN_NODE_URL reachable.
 DB error saat logging: pastikan DATABASE_URL benar dan DB sudah dibuat/migrasi dijalankan.
 Network tidak nyambung di Docker: pastikan network eksternal blockchain_sut_net ada (dibuat oleh stack blockchain) dan service nonsigner1 berjalan.
-Ganti skenario uji: ubah CORE_SCENARIOS di run_pipeline.sh atau panggil generator benchmark dengan --scenario yang diinginkan (lihat scenarios.json).
+Ganti skenario uji:
+- Gunakan skenario `LAM` untuk rangkaian mint/baca/burn Sertifikat LAM (butuh hasil mint untuk menentukan `totalTokens` dan rentang burn).
+ ubah CORE_SCENARIOS di run_pipeline.sh atau panggil generator benchmark dengan --scenario yang diinginkan (lihat scenarios.json).

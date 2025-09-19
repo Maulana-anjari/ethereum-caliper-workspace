@@ -17,7 +17,7 @@ class SimpleStorageWorkload extends WorkloadModuleBase {
       // Operasi tulis: menyimpan angka berdasarkan indeks transaksi
       const valueToSet = this.txIndex;
       request = {
-        contract: "simple-storage",
+        contractId: "SimpleStorage",
         verb: "set",
         args: [valueToSet],
         readOnly: false,
@@ -25,7 +25,7 @@ class SimpleStorageWorkload extends WorkloadModuleBase {
     } else if (operation === "get") {
       // Operasi baca
       request = {
-        contract: "simple-storage",
+        contractId: "SimpleStorage",
         verb: "get",
         args: [],
         readOnly: true,

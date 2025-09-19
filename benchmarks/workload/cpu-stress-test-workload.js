@@ -30,7 +30,7 @@ class CpuStressWorkload extends WorkloadModuleBase {
 
   async submitTransaction() {
     const myArgs = {
-      contractId: "cpu-stress-test",
+      contractId: "CpuStressTest",
       verb: "calculate",
       // Pass the number of iterations from the benchmark config file
       args: [this.roundArguments.iterations],

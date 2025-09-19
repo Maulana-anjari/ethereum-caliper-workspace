@@ -32,6 +32,23 @@ if (!selectedPrivateKey) {
 }
 
 const wallet = new ethers.Wallet(selectedPrivateKey, provider);
+const deployerAddress = wallet.address;
+let workerAddresses = [];
+try {
+  if (process.env.ACCOUNTS_JSON) {
+    const parsed = JSON.parse(process.env.ACCOUNTS_JSON);
+    if (Array.isArray(parsed)) {
+      workerAddresses = parsed
+        .map((acc) => acc.address)
+        .filter((addr) => typeof addr === 'string');
+    }
+  }
+} catch (err) {
+  console.warn('Warning: failed to parse ACCOUNTS_JSON. Continuing with deployer only.');
+}
+if (workerAddresses.length === 0) {
+  workerAddresses = [deployerAddress];
+}
 
 async function main() {
   console.log('Deploying contracts...');
@@ -48,6 +65,8 @@ async function main() {
 
   const MintCertificate = JSON.parse(fs.readFileSync(path.join(__dirname, 'contracts/abi/MintCertificate.json'), 'utf8'));
   const CpuStressTest = JSON.parse(fs.readFileSync(path.join(__dirname, 'contracts/abi/CpuStressTest.json'), 'utf8'));
+  const SertifikatLam = JSON.parse(fs.readFileSync(path.join(__dirname, 'contracts/abi/SertifikatLam.json'), 'utf8'));
+  const SertifikatLam = JSON.parse(fs.readFileSync(path.join(__dirname, 'contracts/abi/SertifikatLam.json'), 'utf8'));
 
   console.log('Deploying MintCertificate...');
   const mintFactory = new ethers.ContractFactory(MintCertificate.abi, MintCertificate.bytecode, wallet);
@@ -73,10 +92,39 @@ async function main() {
   const cpuAddress = await cpuContract.getAddress();
   console.log('CpuStressTest deployed to:', cpuAddress);
 
+  const feeData3 = await provider.getFeeData();
+  const txOverrides3 = {};
+  if (feeData3.gasPrice) {
+      txOverrides3.gasPrice = feeData3.gasPrice;
+  } else {
+      txOverrides3.maxFeePerGas = feeData3.maxFeePerGas;
+      txOverrides3.maxPriorityFeePerGas = feeData3.maxPriorityFeePerGas;
+  }
+
+  console.log('Deploying SertifikatLam...');
+  const lamFactory = new ethers.ContractFactory(SertifikatLam.abi, SertifikatLam.bytecode, wallet);
+  const lamContract = await lamFactory.deploy(txOverrides3);
+  await lamContract.waitForDeployment();
+  const lamAddress = await lamContract.getAddress();
+  console.log('SertifikatLam deployed to:', lamAddress);
+
+  // Ensure deployer and worker addresses are authorized as minters
+  const lamContractInstance = lamContract.connect(wallet);
+  const uniqueMinters = [...new Set(workerAddresses.map((addr) => addr.toLowerCase()))];
+  console.log('Configuring SertifikatLam minters:', uniqueMinters);
+  for (const minterLower of uniqueMinters) {
+    const minter = ethers.getAddress(minterLower);
+    const tx = await lamContractInstance.addMinter(minter, txOverrides3);
+    await tx.wait();
+  }
+
+  console.log('SertifikatLam minter setup complete.');
+
   // Save the address to a file
   fs.writeFileSync(path.join(__dirname, 'deployed-contracts.json'), JSON.stringify({
     MintCertificate: mintAddress,
-    CpuStressTest: cpuAddress
+    CpuStressTest: cpuAddress,
+    SertifikatLam: lamAddress
   }, null, 2));
 }
 

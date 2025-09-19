@@ -57,6 +57,13 @@ for (const contractName in deployedAddresses) {
     contractInfo.gas = {
       benchmarkMint: 800000,
     };
+  } else if (contractName === "SertifikatLam") {
+    contractInfo.gas = {
+      addMinter: 150000,
+      removeMinter: 150000,
+      mint: 900000,
+      burn: 400000,
+    };
   } else {
     // Fallback untuk kontrak lain jika diperlukan
     contractInfo.gas = {

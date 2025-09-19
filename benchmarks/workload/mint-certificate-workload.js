@@ -62,7 +62,7 @@ class MintSertifikatWorkload extends WorkloadModuleBase {
     const uniqueId = this.workerIndex * 1000000 + this.txIndex;
 
     const myArgs = {
-      contract: "MintCertificate",
+      contractId: "MintCertificate",
       verb: "benchmarkMint",
       args: [recipientAddress, uniqueId],
       readOnly: false,

@@ -18,16 +18,46 @@
     "A": {
       "description": "Eksperimen untuk mencari titik jenuh performa minting NFT dengan meningkatkan beban TPS secara bertahap menggunakan fixed-rate.",
       "rounds": [
-        { "id": "A1", "tps": 5 },
-        { "id": "A2", "tps": 10 },
-        { "id": "A3", "tps": 15 },
-        { "id": "A4", "tps": 20 },
-        { "id": "A5", "tps": 25 },
-        { "id": "A6", "tps": 30 },
-        { "id": "A7", "tps": 35 },
-        { "id": "A8", "tps": 40 },
-        { "id": "A9", "tps": 45 },
-        { "id": "A10", "tps": 50 }
+        {
+          "id": "A1",
+          "tps": 5
+        },
+        {
+          "id": "A2",
+          "tps": 10
+        },
+        {
+          "id": "A3",
+          "tps": 15
+        },
+        {
+          "id": "A4",
+          "tps": 20
+        },
+        {
+          "id": "A5",
+          "tps": 25
+        },
+        {
+          "id": "A6",
+          "tps": 30
+        },
+        {
+          "id": "A7",
+          "tps": 35
+        },
+        {
+          "id": "A8",
+          "tps": 40
+        },
+        {
+          "id": "A9",
+          "tps": 45
+        },
+        {
+          "id": "A10",
+          "tps": 50
+        }
       ],
       "commonConfig": {
         "txDuration": 60,
@@ -54,7 +84,9 @@
           "txDuration": 180,
           "workload": {
             "module": "benchmarks/workload/read-certificate-workload.js",
-            "arguments": { "totalTokens": 20000 }
+            "arguments": {
+              "totalTokens": 20000
+            }
           }
         },
         {
@@ -64,7 +96,9 @@
           "txDuration": 180,
           "workload": {
             "module": "benchmarks/workload/cpu-stress-test-workload.js",
-            "arguments": { "iterations": 500 }
+            "arguments": {
+              "iterations": 500
+            }
           }
         }
       ]
@@ -72,8 +106,14 @@
     "C": {
       "description": "Eksperimen skalabilitas klien.",
       "rounds": [
-        { "id": "C1", "workers": 1 },
-        { "id": "C2", "workers": 5 }
+        {
+          "id": "C1",
+          "workers": 1
+        },
+        {
+          "id": "C2",
+          "workers": 5
+        }
       ],
       "commonConfig": {
         "labelPrefix": "mint",
@@ -81,6 +121,72 @@
         "rateTps": "OPTIMAL",
         "workloadModule": "benchmarks/workload/mint-certificate-workload.js"
       }
+    },
+    "LAM": {
+      "description": "Workflow Sertifikat LAM: mint, baca metadata, dan burn.",
+      "rounds": [
+        {
+          "id": "LAM1",
+          "label": "lam-mint",
+          "workers": 3,
+          "txDuration": 120,
+          "rateControl": {
+            "type": "fixed-rate",
+            "opts": {
+              "tps": 30
+            }
+          },
+          "workload": {
+            "module": "benchmarks/workload/lam-mint-workload.js",
+            "arguments": {
+              "baseUri": "ipfs://lam",
+              "codeUniv": "DCHAIN-U",
+              "akreditasi": "A",
+              "mulaiBerlaku": "2024-01-01",
+              "akhirBerlaku": "2029-12-31",
+              "batchId": "LAM"
+            }
+          }
+        },
+        {
+          "id": "LAM2",
+          "label": "lam-read",
+          "workers": 3,
+          "txDuration": 120,
+          "rateControl": {
+            "type": "fixed-rate",
+            "opts": {
+              "tps": 60
+            }
+          },
+          "workload": {
+            "module": "benchmarks/workload/lam-read-workload.js",
+            "arguments": {
+              "totalTokens": 100,
+              "tokenIdOffset": 1
+            }
+          }
+        },
+        {
+          "id": "LAM3",
+          "label": "lam-burn",
+          "workers": 3,
+          "txDuration": 120,
+          "rateControl": {
+            "type": "fixed-rate",
+            "opts": {
+              "tps": 10
+            }
+          },
+          "workload": {
+            "module": "benchmarks/workload/lam-burn-workload.js",
+            "arguments": {
+              "startTokenId": 1,
+              "tokensPerWorker": 10
+            }
+          }
+        }
+      ]
     }
   }
 }

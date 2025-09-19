@@ -31,6 +31,14 @@ contract MintCertificate is ERC721 {
         return newItemId;
     }
 
+    /**
+     * @dev Mengembalikan nomor sertifikat yang tersimpan untuk token tertentu.
+     * Disediakan agar workload Caliper dapat melakukan operasi baca pada state.
+     */
+    function getCertificateNumber(uint256 tokenId) external view returns (string memory) {
+        return certificateNumbers[tokenId];
+    }
+
     // Fungsi helper untuk mengubah uint menjadi string di dalam chain
     function toString(uint256 value) internal pure returns (string memory) {
         if (value == 0) {

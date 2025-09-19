@@ -4,7 +4,7 @@ const { WorkloadModuleBase } = require("@hyperledger/caliper-core");
 
 /**
  * Workload module for benchmarking read operations on the "Sertifikat" contract.
- * Each transaction calls the 'certificateNumbers' getter function.
+ * Each transaction memanggil fungsi publik 'getCertificateNumber'.
  */
 class ReadSertifikatWorkload extends WorkloadModuleBase {
   constructor() {
@@ -52,10 +52,9 @@ class ReadSertifikatWorkload extends WorkloadModuleBase {
       Math.floor(Math.random() * this.roundArguments.totalTokens) + 1;
 
     const myArgs = {
-      contractId: "mint-certificate",
-      verb: "certificateNumbers", // The auto-generated getter for the public mapping
+      contractId: "MintCertificate",
+      verb: "getCertificateNumber",
       args: [randomTokenId],
-      // This is a read-only operation
       readOnly: true,
     };
 
