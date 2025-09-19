@@ -5,43 +5,73 @@ services:
     image: postgres:14
     container_name: caliper_db
     environment:
-      POSTGRES_DB: \${POSTGRES_DB:-caliper_db}
-      POSTGRES_USER: \${POSTGRES_USER:-caliper_user}
-      POSTGRES_PASSWORD: \${POSTGRES_PASSWORD:-YourStrongPassword}
+      POSTGRES_DB: ${POSTGRES_DB:-caliper_db}
+      POSTGRES_USER: ${POSTGRES_USER:-caliper_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-YourStrongPassword}
     volumes:
       - caliper_db_data:/var/lib/postgresql/data
     networks:
       - caliper_internal_net
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-caliper_user}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   caliper-benchmark:
     build:
       context: .
-      dockerfile: Dockerfile # We will create this next
+      dockerfile: Dockerfile
     container_name: caliper_benchmark
     depends_on:
-      - caliper-db
+      caliper-db:
+        condition: service_healthy
+      pushgateway:
+        condition: service_started
+      prometheus:
+        condition: service_started
     volumes:
       # Mount the entire workspace to access scripts and contracts
       - ./:/hyperledger/caliper/workspace
       # Mount the blockchain project to access its keystore
       - ../blockchain-poa-geth:/blockchain-poa-geth:ro
+    env_file:
+      - .env
     environment:
-      # Pass all environment variables from the .env file
-      - \$(cat .env | grep -v '^#' | xargs)
-      # Override specific variables for the container environment
-      - PGHOST=caliper-db
-      - BLOCKCHAIN_NODE_URL=http://nonsigner1:8545
+      PGHOST: caliper-db
+      PGPORT: ${PGPORT:-5432}
+      BLOCKCHAIN_NODE_URL: ${BLOCKCHAIN_NODE_URL:-http://nonsigner1:8545}
     networks:
       - caliper_internal_net
       - blockchain_net # External network from the blockchain stack
     # The command to run when the container starts
     command: ["./run_pipeline.sh"]
 
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: caliper_prometheus
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "${PROMETHEUS_HOST_PORT:-9090}:9090"
+    networks:
+      - caliper_internal_net
+    restart: unless-stopped
+
+  pushgateway:
+    image: prom/pushgateway:latest
+    container_name: caliper_pushgateway
+    ports:
+      - "${PUSHGATEWAY_HOST_PORT:-9091}:9091"
+    networks:
+      - caliper_internal_net
+    restart: unless-stopped
+
 networks:
   caliper_internal_net:
-    driver: overlay
-    attachable: true
+    driver: bridge
+    name: caliper_internal_net
   blockchain_net:
     name: \${COMPOSE_PROJECT_NAME:-blockchain_sut}_net # Must match the blockchain stack's network name
     external: true

@@ -5,7 +5,7 @@ const fs = require("fs");
 const path = require("path");
 const yaml = require("js-yaml");
 
-const PROM_PUSH_URL = process.env.PROMETHEUS_PUSH_URL || "http://pushgateway:9091";
+const PROM_PUSH_URL = process.env.PROMETHEUS_PUSH_URL || "http://caliper_pushgateway:9091";
 const PROM_PUSH_JOB = process.env.PROMETHEUS_PUSH_JOB || "caliper-benchmark";
 
 // --- Helper untuk mem-parsing argumen command line ---

@@ -56,21 +56,24 @@ npx caliper launch manager --caliper-workspace . --caliper-networkconfig network
 node log-to-db.js reports/report-A0.html benchmarks/A0-benchmark.yaml 1
 Alur B — Jalankan via Docker Compose (containerized)
 
-Pastikan stack blockchain jalan (folder blockchain-poa-geth):
-Setup PoA (sekali): ./setup-network-poa.sh
-Start: docker compose -f docker-compose.poa.yml up -d
-Ini akan membuat network eksternal ${COMPOSE_PROJECT_NAME:-blockchain_sut}_net yang akan dipakai Caliper.
-Sesuaikan .env untuk container:
-KEYSTORE_SRC_PATH="/blockchain-poa-geth/data/signer1/keystore"
-BLOCKCHAIN_NODE_URL="http://nonsigner1:8545"
-DATABASE_URL="postgresql://caliper_user:YourStrongPassword@caliper-db:5432/caliper_db?schema=public"
-Build & jalankan Caliper + DB internal:
-docker compose -f docker-compose.caliper.yml up --build
-Container caliper_benchmark akan menjalankan run_pipeline.sh otomatis.
-Jika perlu, jalankan migrasi Prisma di dalam container (sekali):
-docker compose -f docker-compose.caliper.yml run --rm caliper-benchmark npx prisma migrate deploy
-Cek hasil di host:
-Report: ethereum-caliper-workspace/reports/*.html
+1. Pastikan stack blockchain jalan (folder `blockchain-poa-geth`):
+   - Setup PoA (sekali): `./setup-network-poa.sh`
+   - Start: `docker compose -f docker-compose.poa.yml up -d`
+   - Ini akan membuat network eksternal `${COMPOSE_PROJECT_NAME:-blockchain_sut}_net` yang akan dipakai Caliper.
+2. Sesuaikan `.env` untuk container:
+   - `KEYSTORE_SRC_PATH="/blockchain-poa-geth/data/signer1/keystore"`
+   - `BLOCKCHAIN_NODE_URL="http://nonsigner1:8545"` (atau endpoint lain sesuai varian)
+   - `DATABASE_URL="postgresql://caliper_user:YourStrongPassword@caliper-db:5432/caliper_db?schema=public"`
+   - Opsional: set `PROMETHEUS_HOST_PORT`/`PUSHGATEWAY_HOST_PORT` jika ingin expose ke host.
+3. Bangun & jalankan layanan monitoring + Caliper:
+   - `docker compose -f docker-compose.caliper.yml up --build -d caliper-db pushgateway prometheus`
+   - `docker compose -f docker-compose.caliper.yml up --build caliper-benchmark`
+   - Container `caliper_benchmark` akan menjalankan `run_pipeline.sh` otomatis setelah Postgres sehat.
+4. Jika perlu, jalankan migrasi Prisma di dalam container (sekali):
+   - `docker compose -f docker-compose.caliper.yml run --rm caliper-benchmark npx prisma migrate deploy`
+5. Cek hasil di host:
+   - Report: `ethereum-caliper-workspace/reports/*.html`
+   - Monitoring: buka `http://localhost:${PROMETHEUS_HOST_PORT:-9090}` untuk Prometheus dan `http://localhost:${PUSHGATEWAY_HOST_PORT:-9091}` untuk Pushgateway.
 Tips & Masalah Umum
 
 Kontrak gagal deploy: pastikan akun punya ETH di jaringan Anda, PRIVATE_KEY sesuai, dan NODE_URL/BLOCKCHAIN_NODE_URL reachable.

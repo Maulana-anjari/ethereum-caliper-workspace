@@ -16,15 +16,17 @@ services:
 
     # Mengatur environment variables di dalam kontainer.
     # Nilai diambil dari file .env yang ada di direktori yang sama.
+    env_file:
+      - .env
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-postgreskripsi}
 
     # Memetakan port internal 5432 dari kontainer ke port 5432 di mesin host Anda.
     # Ini memungkinkan Anda untuk terhubung ke database dari aplikasi di luar Docker (misal: DBeaver, pgAdmin).
     ports:
-      - "5432:5432"
+      - "${POSTGRES_HOST_PORT:-5433}:5432"
 
     # Menggunakan 'named volume' untuk persistensi data.
     # Ini sangat penting agar data database Anda tidak hilang saat kontainer dihapus atau dibuat ulang.
@@ -35,6 +37,11 @@ services:
     # Ganti 'geth-network' jika Anda menggunakan nama jaringan lain.
     networks:
       - geth-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
 # Mendefinisikan 'named volume' yang digunakan oleh layanan di atas.
 volumes:
