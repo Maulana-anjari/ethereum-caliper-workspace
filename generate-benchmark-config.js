@@ -5,6 +5,9 @@ const fs = require("fs");
 const path = require("path");
 const yaml = require("js-yaml");
 
+const PROM_PUSH_URL = process.env.PROMETHEUS_PUSH_URL || "http://pushgateway:9091";
+const PROM_PUSH_JOB = process.env.PROMETHEUS_PUSH_JOB || "caliper-benchmark";
+
 // --- Helper untuk mem-parsing argumen command line ---
 const args = process.argv.slice(2).reduce((acc, arg) => {
   const [key, value] = arg.split("=");
@@ -158,12 +161,37 @@ try {
   }
 
   // Tambahkan monitor ke semua konfigurasi
+  const scenarioLabel = args.scenario || "unknown";
+  const variantLabel = process.env.EXPERIMENT_VARIANT_LABEL || "default";
+  const defaultMetricLabels = {
+    job: PROM_PUSH_JOB,
+    scenario: scenarioLabel,
+    variant: variantLabel,
+  };
+
   finalConfig.monitors = {
+    transaction: [
+      {
+        module: "prometheus-push",
+        options: {
+          pushUrl: PROM_PUSH_URL,
+          pushInterval: 5000,
+          defaultLabels: defaultMetricLabels,
+        },
+      },
+    ],
     resource: [
       {
         module: "docker",
-        options: { interval: 1, containers: ["all"] },
-        charting: { bar: { metrics: ["all"] } },
+        options: {
+          interval: 1,
+          containers: ["all"],
+        },
+        charting: {
+          line: {
+            metrics: ["CPU%(avg)", "Memory(avg)", "Disc Read", "Disc Write"],
+          },
+        },
       },
     ],
   };

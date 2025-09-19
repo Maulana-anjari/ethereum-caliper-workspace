@@ -40,9 +40,9 @@ Script ini akan:
 Ekstrak private key dari KEYSTORE_SRC_PATH
 Deploy kontrak (deploy-contracts.js) → menghasilkan deployed-contracts.json
 Generate network config (networks/ethereum-poa-config.json atau ethereum-pos-config.json)
-Generate benchmark config dari scenarios.json
+Generate benchmark config dari scenarios.json (beserta label varian dan metadata pushgateway)
 Jalankan Caliper (npx caliper launch manager)
-Simpan report ke reports/*.html dan log ke DB via Prisma
+Simpan report ke reports/*.html dan log ke DB via Prisma (termasuk avg CPU, avg/max memory, disk IO)
 Cek hasil:
 Report: reports/report-A0-trial-1.html (default skenario A0)
 Tabel DB: ExperimentResult (schema Prisma)
@@ -75,7 +75,7 @@ Tips & Masalah Umum
 
 Kontrak gagal deploy: pastikan akun punya ETH di jaringan Anda, PRIVATE_KEY sesuai, dan NODE_URL/BLOCKCHAIN_NODE_URL reachable.
 DB error saat logging: pastikan DATABASE_URL benar dan DB sudah dibuat/migrasi dijalankan.
-Network tidak nyambung di Docker: pastikan network eksternal blockchain_sut_net ada (dibuat oleh stack blockchain) dan service nonsigner1 berjalan.
+Network tidak nyambung di Docker: pastikan network eksternal ${COMPOSE_PROJECT_NAME:-blockchain_sut}_net ada (dibuat oleh stack blockchain) dan service nonsigner1 berjalan.
 Ganti skenario uji:
-- Gunakan skenario `LAM` untuk rangkaian mint/baca/burn Sertifikat LAM (butuh hasil mint untuk menentukan `totalTokens` dan rentang burn).
- ubah CORE_SCENARIOS di run_pipeline.sh atau panggil generator benchmark dengan --scenario yang diinginkan (lihat scenarios.json).
+- Gunakan skenario `LAM` untuk rangkaian mint/baca/burn Sertifikat LAM (butuh hasil mint untuk menentukan `totalTokens` dan rentang burn`).
+- Ubah `CORE_SCENARIOS` di `.env` atau panggil generator benchmark dengan `--scenario` yang diinginkan (lihat `scenarios.json`).

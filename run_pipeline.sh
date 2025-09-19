@@ -132,12 +132,12 @@ run_benchmark_set() {
     fi
 
     log_action "Generating benchmark config for ${C_CYAN}${SCENARIO_ID}${C_NC} (variant ${VARIANT_SAFE})"
-    node generate-benchmark-config.js "${GENERATOR_ARGS[@]}"
+    EXPERIMENT_VARIANT_LABEL=${VARIANT_SAFE} node generate-benchmark-config.js "${GENERATOR_ARGS[@]}"
 
     log_action "Launching Caliper for ${C_CYAN}${SCENARIO_ID}${C_NC} (variant ${VARIANT_SAFE}, trial ${C_CYAN}${TRIAL_NUM_ARG}${C_NC})"
     log_info "Report will be at: ${C_CYAN}${REPORT_PATH}${C_NC}"
 
-    npx caliper launch manager \
+    EXPERIMENT_VARIANT_LABEL=${VARIANT_SAFE} npx caliper launch manager \
         --caliper-workspace . \
         --caliper-networkconfig ${NETWORK_CONFIG_PATH} \
         --caliper-benchconfig ${BENCHMARK_CONFIG_FILE} \
@@ -148,11 +148,11 @@ run_benchmark_set() {
     log_success "Benchmark ${SCENARIO_ID} (variant ${VARIANT_SAFE}, trial ${TRIAL_NUM_ARG}) completed."
 
     log_action "Logging results from ${C_CYAN}${REPORT_PATH}${C_NC} to database"
-    node log-to-db.js "${REPORT_PATH}" "${BENCHMARK_CONFIG_FILE}" "${TRIAL_NUM_ARG}"
+    EXPERIMENT_VARIANT_LABEL=${VARIANT_SAFE} node log-to-db.js "${REPORT_PATH}" "${BENCHMARK_CONFIG_FILE}" "${TRIAL_NUM_ARG}"
 
     if [ "$SCENARIO_ID" = "A" ]; then
         log_action "Analyzing scenario A results to determine optimal TPS"
-        if node analyze-report.js "${REPORT_PATH}"; then
+        if EXPERIMENT_VARIANT_LABEL=${VARIANT_SAFE} node analyze-report.js "${REPORT_PATH}"; then
             if [ -f optimal_tps.txt ]; then
                 OPTIMAL_TPS_VALUE=$(cat optimal_tps.txt)
                 log_info "Optimal TPS diperbarui ke ${OPTIMAL_TPS_VALUE}"
@@ -172,6 +172,8 @@ for VARIANT in "${EXPERIMENT_VARIANTS[@]}"; do
     fi
 
     log_step "VARIANT ${VARIANT_SAFE}"
+
+    export EXPERIMENT_VARIANT_LABEL=${VARIANT_SAFE}
 
     VARIANT_ENV_FILE="./variants/${VARIANT_SAFE}.env"
     if [ -f "$VARIANT_ENV_FILE" ]; then
