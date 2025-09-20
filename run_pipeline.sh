@@ -116,7 +116,7 @@ run_benchmark_set() {
     local GENERATOR_ARGS=(--scenario=${SCENARIO_ID} --output=${BENCHMARK_CONFIG_FILE})
     local requires_optimal="false"
     case "$SCENARIO_ID" in
-        B|B1|B2|B3|C|C1|C2|S|S1|F|F1)
+        mixed-workload|worker-scale|stability-soak|fault-injection)
             requires_optimal="true"
             ;;
     esac

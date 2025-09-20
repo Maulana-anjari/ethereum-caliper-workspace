@@ -1,6 +1,6 @@
 {
   "scenarios": {
-    "A0": {
+    "throughput-fixed-load": {
       "label": "A0-fixed-load-test",
       "description": "Menemukan throughput maksimum menggunakan fixed-load.",
       "txDuration": 180,
@@ -15,7 +15,7 @@
         "module": "benchmarks/workload/mint-certificate-workload.js"
       }
     },
-    "A": {
+    "throughput-step": {
       "description": "Eksperimen untuk mencari titik jenuh performa minting NFT dengan meningkatkan beban TPS secara bertahap menggunakan fixed-rate.",
       "rounds": [
         {
@@ -65,7 +65,7 @@
         "workloadModule": "benchmarks/workload/mint-certificate-workload.js"
       }
     },
-    "B": {
+    "mixed-workload": {
       "description": "Membandingkan performa jaringan untuk operasi Tulis (I/O), Baca, dan Komputasi (CPU).",
       "rounds": [
         {
@@ -103,7 +103,7 @@
         }
       ]
     },
-    "C": {
+    "worker-scale": {
       "description": "Eksperimen skalabilitas klien.",
       "rounds": [
         {
@@ -122,7 +122,7 @@
         "workloadModule": "benchmarks/workload/mint-certificate-workload.js"
       }
     },
-    "LAM": {
+    "certificate-lifecycle": {
       "description": "Workflow Sertifikat LAM: mint, baca metadata, dan burn.",
       "rounds": [
         {
@@ -188,7 +188,7 @@
         }
       ]
     },
-    "S": {
+    "stability-soak": {
       "description": "Stability soak test to observe performance over extended duration.",
       "rounds": [
         {
@@ -209,7 +209,7 @@
         "workers": 3
       }
     },
-    "F": {
+    "fault-injection": {
       "description": "Fault tolerance scenario with induced validator disruption.",
       "rounds": [
         {

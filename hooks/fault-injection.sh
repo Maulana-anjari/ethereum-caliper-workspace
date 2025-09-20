@@ -11,9 +11,9 @@ TARGET_SERVICE=${FAULT_INJECT_SERVICE:-signer1}
 DELAY=${FAULT_INJECT_DELAY:-120}
 
 if [ "$PHASE" = "pre" ]; then
-  echo "[hook F] scheduling stop of ${TARGET_SERVICE} in ${DELAY}s (variant=${VARIANT}, trial=${TRIAL})"
+  echo "[hook fault-injection] scheduling stop of ${TARGET_SERVICE} in ${DELAY}s (variant=${VARIANT}, trial=${TRIAL})"
   ( sleep "$DELAY" && docker compose -f "$COMPOSE_FILE" stop "$TARGET_SERVICE" >/tmp/fault-${VARIANT}-${TRIAL}.log 2>&1 ) &
 elif [ "$PHASE" = "post" ]; then
-  echo "[hook F] ensuring ${TARGET_SERVICE} is running"
+  echo "[hook fault-injection] ensuring ${TARGET_SERVICE} is running"
   docker compose -f "$COMPOSE_FILE" up -d "$TARGET_SERVICE"
 fi

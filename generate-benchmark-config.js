@@ -32,11 +32,10 @@ try {
   let finalConfig;
 
   if (targetScenario) {
-    // Logika untuk Skenario A, B, dan A0 (yang didefinisikan secara penuh)
-    if (args.scenario.startsWith("A") && args.scenario !== "A0") {
+    if (args.scenario === "throughput-step") {
       const rounds = targetScenario.rounds.map((round) => ({
         label: round.id,
-        description: `Test minting NFT dengan beban ${round.tps} TPS.`,
+        description: `Minting NFT pada ${round.tps} TPS.`,
         txDuration: targetScenario.commonConfig.txDuration,
         rateControl: {
           type: targetScenario.commonConfig.rateControllerType,
@@ -46,14 +45,14 @@ try {
       }));
       finalConfig = {
         test: {
-          name: `Scenario-A-Saturation-Test`,
+          name: `Scenario-${args.scenario}-Test`,
           description: targetScenario.description,
-          workers: { number: 3 },
+          workers: { number: targetScenario.commonConfig?.workers || 3 },
           rounds: rounds,
         },
       };
     } else if (targetScenario.rounds) {
-      // Untuk Skenario B dan A0
+      // Skenario dengan beberapa rounds terdefinisi (mixed-workload, worker-scale, certificate-lifecycle, dsb)
       const rounds = targetScenario.rounds.map((round) => {
         let tps = round.rateTps;
         if (tps === "OPTIMAL") {
@@ -109,53 +108,62 @@ try {
       };
     }
   } else {
-    // Logika baru untuk sub-skenario seperti C1, C2
-    const parentScenarioKey = args.scenario.charAt(0); // 'C' from 'C1'
-    const parentScenario = allScenarios.scenarios[parentScenarioKey];
+    // Mencari round tertentu dengan mencocokkan id pada setiap skenario
+    let parentKey = null;
+    let roundData = null;
+    let parentScenario = null;
 
-    if (parentScenario && parentScenario.rounds) {
-      const roundData = parentScenario.rounds.find(
-        (r) => r.id === args.scenario
-      );
+    for (const [key, scenario] of Object.entries(allScenarios.scenarios)) {
+      if (!scenario.rounds) {
+        continue;
+      }
+      const found = scenario.rounds.find((r) => r.id === args.scenario);
+      if (found) {
+        parentKey = key;
+        parentScenario = scenario;
+        roundData = found;
+        break;
+      }
+    }
 
-      if (roundData) {
-        const common = parentScenario.commonConfig;
-        let tps = common.rateTps;
-        if (tps === "OPTIMAL") {
-          if (!args.optimalTps)
-            throw new Error(
-              `Skenario ${args.scenario} memerlukan --optimalTps.`
-            );
-          tps = parseInt(args.optimalTps);
+    if (parentScenario && roundData) {
+      const common = parentScenario.commonConfig || {};
+      let tps = roundData.rateTps || common.rateTps;
+      if (tps === "OPTIMAL") {
+        if (!args.optimalTps) {
+          throw new Error(`Skenario ${args.scenario} memerlukan --optimalTps.`);
         }
+        tps = parseInt(args.optimalTps);
+      }
 
-        const round = {
-          label: `${roundData.id}-${common.labelPrefix}`,
-          description: `Uji tulis murni dengan ${roundData.workers} worker pada TPS optimal.`,
-          txDuration: common.txDuration,
-          rateControl: {
-            type: "fixed-rate",
+      const round = {
+        label: roundData.label || roundData.id,
+        description:
+          roundData.description || `Round ${roundData.id} dari skenario ${parentKey}`,
+        txDuration: roundData.txDuration || common.txDuration,
+        rateControl:
+          roundData.rateControl || {
+            type: common.rateControllerType || "fixed-rate",
             opts: { tps: tps },
           },
-          workload: { module: common.workloadModule },
-        };
+        workload: roundData.workload || { module: common.workloadModule },
+      };
 
-        finalConfig = {
-          test: {
-            name: `Client-Scalability-Test-${roundData.workers}-Worker`,
-            description: `Mengukur performa jaringan dengan beban dari ${roundData.workers} worker.`,
-            workers: { number: roundData.workers },
-            rounds: [round],
-          },
-        };
-      } else {
-        throw new Error(
-          `Round "${args.scenario}" tidak ditemukan di dalam skenario "${parentScenarioKey}".`
-        );
-      }
+      const workerCount =
+        roundData.workers || common.workers || parentScenario.workers || 3;
+
+      finalConfig = {
+        test: {
+          name: `Scenario-${parentKey}-${roundData.id}`,
+          description:
+            parentScenario.description || `Skema turunan dari ${parentKey}`,
+          workers: { number: workerCount },
+          rounds: [round],
+        },
+      };
     } else {
       throw new Error(
-        `Skenario "${args.scenario}" tidak ditemukan di scenarios.json`
+        `Skenario atau round "${args.scenario}" tidak ditemukan di scenarios.json`
       );
     }
   }

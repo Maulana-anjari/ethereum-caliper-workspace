@@ -9,7 +9,7 @@ Jaringan blockchain Geth PoA/PoS sudah jalan. Untuk PoA, jalankan dulu project t
 Sebelum Mulai
 
 Konfigurasi pipeline kini dibaca dari environment:
-- `CORE_SCENARIOS` berisi daftar ID skenario (mis. `A0,A,B,C,LAM`).
+- `CORE_SCENARIOS` berisi daftar ID skenario (mis. `throughput-fixed-load,throughput-step,mixed-workload,worker-scale,certificate-lifecycle,stability-soak,fault-injection`).
 - `EXPERIMENT_VARIANTS` opsional untuk menjalankan paket yang sama pada beberapa topologi/beban; jika diisi, pipeline akan mencari file `variants/<nama>.env` untuk override per varian.
 - `OPTIMAL_TPS_OVERRIDE` (opsional) memaksa nilai TPS optimal jika ingin melewati analisis skenario A.
 
@@ -44,16 +44,16 @@ Generate benchmark config dari scenarios.json (beserta label varian dan metadata
 Jalankan Caliper (npx caliper launch manager)
 Simpan report ke reports/*.html dan log ke DB via Prisma (termasuk avg CPU, avg/max memory, disk IO)
 Cek hasil:
-Report: reports/report-A0-trial-1.html (default skenario A0)
+Report: reports/report-throughput-fixed-load-trial-1.html (default soak scenario)
 Tabel DB: ExperimentResult (schema Prisma)
 Catatan:
 
 Kalau hanya mau manual per langkah, Anda bisa jalankan urut:
 node deploy-contracts.js
 node generate-network-config.js
-node generate-benchmark-config.js --scenario A0 --output benchmarks/A0-benchmark.yaml
-npx caliper launch manager --caliper-workspace . --caliper-networkconfig networks/ethereum-poa-config.json --caliper-benchconfig benchmarks/A0-benchmark.yaml --caliper-report-path reports/report-A0.html --caliper-flow-skip-install
-node log-to-db.js reports/report-A0.html benchmarks/A0-benchmark.yaml 1
+node generate-benchmark-config.js --scenario throughput-fixed-load --output benchmarks/throughput-fixed-load-benchmark.yaml
+npx caliper launch manager --caliper-workspace . --caliper-networkconfig networks/ethereum-poa-config.json --caliper-benchconfig benchmarks/throughput-fixed-load-benchmark.yaml --caliper-report-path reports/report-throughput-fixed-load.html --caliper-flow-skip-install
+node log-to-db.js reports/report-throughput-fixed-load.html benchmarks/throughput-fixed-load-benchmark.yaml 1
 Alur B — Jalankan via Docker Compose (containerized)
 
 1. Pastikan stack blockchain jalan (folder `blockchain-poa-geth`):
