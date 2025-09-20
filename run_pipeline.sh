@@ -116,7 +116,7 @@ run_benchmark_set() {
     local GENERATOR_ARGS=(--scenario=${SCENARIO_ID} --output=${BENCHMARK_CONFIG_FILE})
     local requires_optimal="false"
     case "$SCENARIO_ID" in
-        B|B1|B2|B3|C|C1|C2)
+        B|B1|B2|B3|C|C1|C2|S|S1|F|F1)
             requires_optimal="true"
             ;;
     esac
@@ -129,6 +129,12 @@ run_benchmark_set() {
             log_error "Scenario ${SCENARIO_ID} membutuhkan nilai optimal TPS. Jalankan skenario 'A' terlebih dahulu atau set OPTIMAL_TPS_OVERRIDE."
         fi
         GENERATOR_ARGS+=(--optimalTps="${OPTIMAL_TPS_VALUE}")
+    fi
+
+    local HOOK_SCRIPT="./hooks/${SCENARIO_ID}.sh"
+    if [ -x "$HOOK_SCRIPT" ]; then
+        log_action "Running pre-hook for ${C_CYAN}${SCENARIO_ID}${C_NC}"
+        EXPERIMENT_VARIANT_LABEL=${VARIANT_SAFE} "$HOOK_SCRIPT" pre "${VARIANT_SAFE}" "${TRIAL_NUM_ARG}" || log_error "Pre-hook for ${SCENARIO_ID} failed"
     fi
 
     log_action "Generating benchmark config for ${C_CYAN}${SCENARIO_ID}${C_NC} (variant ${VARIANT_SAFE})"
@@ -149,6 +155,11 @@ run_benchmark_set() {
 
     log_action "Logging results from ${C_CYAN}${REPORT_PATH}${C_NC} to database"
     EXPERIMENT_VARIANT_LABEL=${VARIANT_SAFE} node log-to-db.js "${REPORT_PATH}" "${BENCHMARK_CONFIG_FILE}" "${TRIAL_NUM_ARG}"
+
+    if [ -x "$HOOK_SCRIPT" ]; then
+        log_action "Running post-hook for ${C_CYAN}${SCENARIO_ID}${C_NC}"
+        EXPERIMENT_VARIANT_LABEL=${VARIANT_SAFE} "$HOOK_SCRIPT" post "${VARIANT_SAFE}" "${TRIAL_NUM_ARG}" || log_error "Post-hook for ${SCENARIO_ID} failed"
+    fi
 
     if [ "$SCENARIO_ID" = "A" ]; then
         log_action "Analyzing scenario A results to determine optimal TPS"

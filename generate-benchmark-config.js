@@ -79,7 +79,7 @@ try {
         };
       });
 
-      const workerCount = targetScenario.rounds[0].workers || 3;
+      const workerCount = targetScenario.rounds[0].workers || targetScenario.commonConfig?.workers || 3;
 
       finalConfig = {
         test: {

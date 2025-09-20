@@ -187,6 +187,48 @@
           }
         }
       ]
+    },
+    "S": {
+      "description": "Stability soak test to observe performance over extended duration.",
+      "rounds": [
+        {
+          "id": "S1",
+          "label": "stability-soak",
+          "rateTps": "OPTIMAL",
+          "txDuration": 900,
+          "workload": {
+            "module": "benchmarks/workload/mint-certificate-workload.js",
+            "arguments": {
+              "batchId": "STAB",
+              "codeUniv": "STABILITY"
+            }
+          }
+        }
+      ],
+      "commonConfig": {
+        "workers": 3
+      }
+    },
+    "F": {
+      "description": "Fault tolerance scenario with induced validator disruption.",
+      "rounds": [
+        {
+          "id": "F1",
+          "label": "fault-tolerance",
+          "rateTps": "OPTIMAL",
+          "txDuration": 420,
+          "workload": {
+            "module": "benchmarks/workload/mint-certificate-workload.js",
+            "arguments": {
+              "batchId": "FAULT",
+              "codeUniv": "FAULT"
+            }
+          }
+        }
+      ],
+      "commonConfig": {
+        "workers": 3
+      }
     }
   }
 }

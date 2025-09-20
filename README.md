@@ -80,5 +80,11 @@ Kontrak gagal deploy: pastikan akun punya ETH di jaringan Anda, PRIVATE_KEY sesu
 DB error saat logging: pastikan DATABASE_URL benar dan DB sudah dibuat/migrasi dijalankan.
 Network tidak nyambung di Docker: pastikan network eksternal ${COMPOSE_PROJECT_NAME:-blockchain_sut}_net ada (dibuat oleh stack blockchain) dan service nonsigner1 berjalan.
 Ganti skenario uji:
+Skenario tambahan yang tersedia:
+- `S` (stability-soak): uji durasi panjang untuk memantau stabilitas performa.
+- `F` (fault-tolerance): menjalankan workload sambil mengeksekusi hook fault injection (misal menghentikan validator).
+
+Hook pre/post dapat ditempatkan di folder `hooks/` dengan nama `<SCENARIO>.sh`, akan dipanggil otomatis dengan argumen `pre|post <variant> <trial>`.
+
 - Gunakan skenario `LAM` untuk rangkaian mint/baca/burn Sertifikat LAM (butuh hasil mint untuk menentukan `totalTokens` dan rentang burn`).
 - Ubah `CORE_SCENARIOS` di `.env` atau panggil generator benchmark dengan `--scenario` yang diinginkan (lihat `scenarios.json`).
