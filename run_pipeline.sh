@@ -68,7 +68,8 @@ log_action "Preparing keystore for key extraction"
 if [ -n "${KEYSTORE_SRC_PATHS}" ]; then
     IFS=',' read -r -a KS_PATHS_ARR <<< "${KEYSTORE_SRC_PATHS}"
     for p in "${KS_PATHS_ARR[@]}"; do
-        p_trimmed="${p//\n/}"
+        p_trimmed="${p//$'\n'/}"
+        p_trimmed="${p_trimmed//$'\r'/}"
         if [ ! -d "$p_trimmed" ] || [ -z "$(ls -A "$p_trimmed")" ]; then
             log_error "Keystore directory not found or empty: '$p_trimmed'"
         fi
