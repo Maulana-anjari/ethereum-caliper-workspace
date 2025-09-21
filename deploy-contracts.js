@@ -66,7 +66,6 @@ async function main() {
   const MintCertificate = JSON.parse(fs.readFileSync(path.join(__dirname, 'contracts/abi/MintCertificate.json'), 'utf8'));
   const CpuStressTest = JSON.parse(fs.readFileSync(path.join(__dirname, 'contracts/abi/CpuStressTest.json'), 'utf8'));
   const SertifikatLam = JSON.parse(fs.readFileSync(path.join(__dirname, 'contracts/abi/SertifikatLam.json'), 'utf8'));
-  const SertifikatLam = JSON.parse(fs.readFileSync(path.join(__dirname, 'contracts/abi/SertifikatLam.json'), 'utf8'));
 
   console.log('Deploying MintCertificate...');
   const mintFactory = new ethers.ContractFactory(MintCertificate.abi, MintCertificate.bytecode, wallet);
