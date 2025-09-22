@@ -61,8 +61,10 @@ class MintSertifikatWorkload extends WorkloadModuleBase {
     // Create a unique ID for each new token to ensure each transaction is unique.
     const uniqueId = this.workerIndex * 1000000 + this.txIndex;
 
+    const contractName = "MintCertificate";
     const myArgs = {
-      contractId: "MintCertificate",
+      contract: contractName,
+      contractId: contractName,
       verb: "benchmarkMint",
       args: [recipientAddress, uniqueId],
       readOnly: false,

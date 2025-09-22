@@ -49,8 +49,10 @@ class LamBurnWorkload extends WorkloadModuleBase {
     const tokenId =
       startTokenId + tokensPerWorker * this.workerIndex + (this.txIndex - 1);
 
+    const contractName = "SertifikatLam";
     const request = {
-      contractId: "SertifikatLam",
+      contract: contractName,
+      contractId: contractName,
       verb: "burn",
       args: [tokenId],
       readOnly: false,

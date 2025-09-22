@@ -51,8 +51,10 @@ class ReadSertifikatWorkload extends WorkloadModuleBase {
     const randomTokenId =
       Math.floor(Math.random() * this.roundArguments.totalTokens) + 1;
 
+    const contractName = "MintCertificate";
     const myArgs = {
-      contractId: "MintCertificate",
+      contract: contractName,
+      contractId: contractName,
       verb: "getCertificateNumber",
       args: [randomTokenId],
       readOnly: true,

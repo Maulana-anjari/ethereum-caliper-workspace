@@ -3,18 +3,24 @@
     "blockchain": "ethereum"
   },
   "ethereum": {
-    "url": "ws://localhost:8558",
-    "fromAddress": "0x5F9882C7BD416C866076917507b2f9B6E3dDF709",
-    "fromAddressPrivateKey": "0x4bbbc7e90b443f2c9bafb3a8c3a5cd23ad13a33d2ae70451bc5e3a03d0020a8f",
+    "url": "ws://localhost:8546",
+    "fromAddress": "0xB14E989e19F1e55A5FfC4DB8355b923636D7eA89",
+    "fromAddressPrivateKey": "0x718ea446b3dbc0899d810a3e86dda96dfe308fae2bb15c66a094ccac7dc96d9a",
     "wallets": [
       {
-        "privateKey": "0x4bbbc7e90b443f2c9bafb3a8c3a5cd23ad13a33d2ae70451bc5e3a03d0020a8f"
+        "privateKey": "0x718ea446b3dbc0899d810a3e86dda96dfe308fae2bb15c66a094ccac7dc96d9a"
+      },
+      {
+        "privateKey": "0x92288b19f52096996b3bc13551a98ff354c3c9570182e126456a8f5ee29f24cc"
+      },
+      {
+        "privateKey": "0x1ecd6da691353f492077298553b28da68f179b77d2f545c4cc12c3d019ad8541"
       }
     ],
     "transactionConfirmationBlocks": 2,
     "contracts": {
       "MintCertificate": {
-        "address": "0xE9676dA7D91C518Bbff48eC5B2A9F89464Ff5404",
+        "address": "0x805413F7C6DE0b43E716E15a3C1619BefB274631",
         "abi": [
           {
             "inputs": [],
@@ -171,6 +177,25 @@
                 "internalType": "address",
                 "name": "",
                 "type": "address"
+              }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+          },
+          {
+            "inputs": [
+              {
+                "internalType": "uint256",
+                "name": "tokenId",
+                "type": "uint256"
+              }
+            ],
+            "name": "getCertificateNumber",
+            "outputs": [
+              {
+                "internalType": "string",
+                "name": "",
+                "type": "string"
               }
             ],
             "stateMutability": "view",
@@ -381,7 +406,7 @@
         }
       },
       "CpuStressTest": {
-        "address": "0xab15faa7a97720B239f17a813e36eFCd0e398595",
+        "address": "0x63803F2e768398633fF5bbd9aE8d788Fd7306a98",
         "abi": [
           {
             "inputs": [
@@ -425,6 +450,797 @@
         ],
         "gas": {
           "calculate": 500000
+        }
+      },
+      "SertifikatLam": {
+        "address": "0xd1Da0E7cDd56eD525b5ae55606cd669227E54c24",
+        "abi": [
+          {
+            "inputs": [],
+            "stateMutability": "nonpayable",
+            "type": "constructor"
+          },
+          {
+            "anonymous": false,
+            "inputs": [
+              {
+                "indexed": false,
+                "internalType": "address",
+                "name": "newAdmin",
+                "type": "address"
+              }
+            ],
+            "name": "AdminChanged",
+            "type": "event"
+          },
+          {
+            "anonymous": false,
+            "inputs": [
+              {
+                "indexed": true,
+                "internalType": "address",
+                "name": "owner",
+                "type": "address"
+              },
+              {
+                "indexed": true,
+                "internalType": "address",
+                "name": "approved",
+                "type": "address"
+              },
+              {
+                "indexed": true,
+                "internalType": "uint256",
+                "name": "tokenId",
+                "type": "uint256"
+              }
+            ],
+            "name": "Approval",
+            "type": "event"
+          },
+          {
+            "anonymous": false,
+            "inputs": [
+              {
+                "indexed": true,
+                "internalType": "address",
+                "name": "owner",
+                "type": "address"
+              },
+              {
+                "indexed": true,
+                "internalType": "address",
+                "name": "operator",
+                "type": "address"
+              },
+              {
+                "indexed": false,
+                "internalType": "bool",
+                "name": "approved",
+                "type": "bool"
+              }
+            ],
+            "name": "ApprovalForAll",
+            "type": "event"
+          },
+          {
+            "anonymous": false,
+            "inputs": [
+              {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "_fromTokenId",
+                "type": "uint256"
+              },
+              {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "_toTokenId",
+                "type": "uint256"
+              }
+            ],
+            "name": "BatchMetadataUpdate",
+            "type": "event"
+          },
+          {
+            "anonymous": false,
+            "inputs": [
+              {
+                "indexed": true,
+                "internalType": "uint256",
+                "name": "tokenId",
+                "type": "uint256"
+              },
+              {
+                "indexed": false,
+                "internalType": "address",
+                "name": "mintedTo",
+                "type": "address"
+              }
+            ],
+            "name": "LAMMinted",
+            "type": "event"
+          },
+          {
+            "anonymous": false,
+            "inputs": [
+              {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "_tokenId",
+                "type": "uint256"
+              }
+            ],
+            "name": "MetadataUpdate",
+            "type": "event"
+          },
+          {
+            "anonymous": false,
+            "inputs": [
+              {
+                "indexed": false,
+                "internalType": "address",
+                "name": "minter",
+                "type": "address"
+              }
+            ],
+            "name": "MinterAdded",
+            "type": "event"
+          },
+          {
+            "anonymous": false,
+            "inputs": [
+              {
+                "indexed": false,
+                "internalType": "address",
+                "name": "minter",
+                "type": "address"
+              }
+            ],
+            "name": "MinterRemoved",
+            "type": "event"
+          },
+          {
+            "anonymous": false,
+            "inputs": [
+              {
+                "indexed": true,
+                "internalType": "address",
+                "name": "previousOwner",
+                "type": "address"
+              },
+              {
+                "indexed": true,
+                "internalType": "address",
+                "name": "newOwner",
+                "type": "address"
+              }
+            ],
+            "name": "OwnershipTransferred",
+            "type": "event"
+          },
+          {
+            "anonymous": false,
+            "inputs": [
+              {
+                "indexed": true,
+                "internalType": "address",
+                "name": "from",
+                "type": "address"
+              },
+              {
+                "indexed": true,
+                "internalType": "address",
+                "name": "to",
+                "type": "address"
+              },
+              {
+                "indexed": true,
+                "internalType": "uint256",
+                "name": "tokenId",
+                "type": "uint256"
+              }
+            ],
+            "name": "Transfer",
+            "type": "event"
+          },
+          {
+            "inputs": [
+              {
+                "internalType": "address",
+                "name": "minter",
+                "type": "address"
+              }
+            ],
+            "name": "addMinter",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+          },
+          {
+            "inputs": [],
+            "name": "admin",
+            "outputs": [
+              {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+              }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+          },
+          {
+            "inputs": [
+              {
+                "internalType": "address",
+                "name": "to",
+                "type": "address"
+              },
+              {
+                "internalType": "uint256",
+                "name": "tokenId",
+                "type": "uint256"
+              }
+            ],
+            "name": "approve",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+          },
+          {
+            "inputs": [
+              {
+                "internalType": "address",
+                "name": "owner",
+                "type": "address"
+              }
+            ],
+            "name": "balanceOf",
+            "outputs": [
+              {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+              }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+          },
+          {
+            "inputs": [
+              {
+                "internalType": "uint256",
+                "name": "tokenId",
+                "type": "uint256"
+              }
+            ],
+            "name": "burn",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+          },
+          {
+            "inputs": [],
+            "name": "getAllSertifikat",
+            "outputs": [
+              {
+                "internalType": "uint256[]",
+                "name": "tokenIds",
+                "type": "uint256[]"
+              },
+              {
+                "components": [
+                  {
+                    "internalType": "string",
+                    "name": "codeUniv",
+                    "type": "string"
+                  },
+                  {
+                    "internalType": "string",
+                    "name": "codeProdi",
+                    "type": "string"
+                  },
+                  {
+                    "internalType": "string",
+                    "name": "akreditasi",
+                    "type": "string"
+                  },
+                  {
+                    "internalType": "string",
+                    "name": "mulaiBerlaku",
+                    "type": "string"
+                  },
+                  {
+                    "internalType": "string",
+                    "name": "akhirBerlaku",
+                    "type": "string"
+                  },
+                  {
+                    "internalType": "string",
+                    "name": "skNumber",
+                    "type": "string"
+                  }
+                ],
+                "internalType": "struct SertifikatLam.MetadataLAM[]",
+                "name": "metadata",
+                "type": "tuple[]"
+              },
+              {
+                "internalType": "string[]",
+                "name": "uris",
+                "type": "string[]"
+              },
+              {
+                "internalType": "address[]",
+                "name": "owners",
+                "type": "address[]"
+              }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+          },
+          {
+            "inputs": [
+              {
+                "internalType": "uint256",
+                "name": "tokenId",
+                "type": "uint256"
+              }
+            ],
+            "name": "getApproved",
+            "outputs": [
+              {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+              }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+          },
+          {
+            "inputs": [
+              {
+                "internalType": "uint256",
+                "name": "tokenId",
+                "type": "uint256"
+              }
+            ],
+            "name": "getSertifikat",
+            "outputs": [
+              {
+                "components": [
+                  {
+                    "internalType": "string",
+                    "name": "codeUniv",
+                    "type": "string"
+                  },
+                  {
+                    "internalType": "string",
+                    "name": "codeProdi",
+                    "type": "string"
+                  },
+                  {
+                    "internalType": "string",
+                    "name": "akreditasi",
+                    "type": "string"
+                  },
+                  {
+                    "internalType": "string",
+                    "name": "mulaiBerlaku",
+                    "type": "string"
+                  },
+                  {
+                    "internalType": "string",
+                    "name": "akhirBerlaku",
+                    "type": "string"
+                  },
+                  {
+                    "internalType": "string",
+                    "name": "skNumber",
+                    "type": "string"
+                  }
+                ],
+                "internalType": "struct SertifikatLam.MetadataLAM",
+                "name": "metadata",
+                "type": "tuple"
+              },
+              {
+                "internalType": "string",
+                "name": "uri",
+                "type": "string"
+              },
+              {
+                "internalType": "address",
+                "name": "owner",
+                "type": "address"
+              },
+              {
+                "internalType": "bool",
+                "name": "exists",
+                "type": "bool"
+              }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+          },
+          {
+            "inputs": [],
+            "name": "getTotalSertifikat",
+            "outputs": [
+              {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+              }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+          },
+          {
+            "inputs": [
+              {
+                "internalType": "address",
+                "name": "owner",
+                "type": "address"
+              },
+              {
+                "internalType": "address",
+                "name": "operator",
+                "type": "address"
+              }
+            ],
+            "name": "isApprovedForAll",
+            "outputs": [
+              {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+              }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+          },
+          {
+            "inputs": [
+              {
+                "internalType": "string",
+                "name": "uri_",
+                "type": "string"
+              },
+              {
+                "components": [
+                  {
+                    "internalType": "string",
+                    "name": "codeUniv",
+                    "type": "string"
+                  },
+                  {
+                    "internalType": "string",
+                    "name": "codeProdi",
+                    "type": "string"
+                  },
+                  {
+                    "internalType": "string",
+                    "name": "akreditasi",
+                    "type": "string"
+                  },
+                  {
+                    "internalType": "string",
+                    "name": "mulaiBerlaku",
+                    "type": "string"
+                  },
+                  {
+                    "internalType": "string",
+                    "name": "akhirBerlaku",
+                    "type": "string"
+                  },
+                  {
+                    "internalType": "string",
+                    "name": "skNumber",
+                    "type": "string"
+                  }
+                ],
+                "internalType": "struct SertifikatLam.MetadataLAM",
+                "name": "metadataLam",
+                "type": "tuple"
+              },
+              {
+                "internalType": "address",
+                "name": "_minter",
+                "type": "address"
+              }
+            ],
+            "name": "mint",
+            "outputs": [
+              {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+              }
+            ],
+            "stateMutability": "nonpayable",
+            "type": "function"
+          },
+          {
+            "inputs": [
+              {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+              }
+            ],
+            "name": "minters",
+            "outputs": [
+              {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+              }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+          },
+          {
+            "inputs": [],
+            "name": "name",
+            "outputs": [
+              {
+                "internalType": "string",
+                "name": "",
+                "type": "string"
+              }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+          },
+          {
+            "inputs": [],
+            "name": "owner",
+            "outputs": [
+              {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+              }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+          },
+          {
+            "inputs": [
+              {
+                "internalType": "uint256",
+                "name": "tokenId",
+                "type": "uint256"
+              }
+            ],
+            "name": "ownerOf",
+            "outputs": [
+              {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+              }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+          },
+          {
+            "inputs": [
+              {
+                "internalType": "address",
+                "name": "minter",
+                "type": "address"
+              }
+            ],
+            "name": "removeMinter",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+          },
+          {
+            "inputs": [],
+            "name": "renounceOwnership",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+          },
+          {
+            "inputs": [
+              {
+                "internalType": "address",
+                "name": "from",
+                "type": "address"
+              },
+              {
+                "internalType": "address",
+                "name": "to",
+                "type": "address"
+              },
+              {
+                "internalType": "uint256",
+                "name": "tokenId",
+                "type": "uint256"
+              }
+            ],
+            "name": "safeTransferFrom",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+          },
+          {
+            "inputs": [
+              {
+                "internalType": "address",
+                "name": "from",
+                "type": "address"
+              },
+              {
+                "internalType": "address",
+                "name": "to",
+                "type": "address"
+              },
+              {
+                "internalType": "uint256",
+                "name": "tokenId",
+                "type": "uint256"
+              },
+              {
+                "internalType": "bytes",
+                "name": "data",
+                "type": "bytes"
+              }
+            ],
+            "name": "safeTransferFrom",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+          },
+          {
+            "inputs": [
+              {
+                "internalType": "uint256",
+                "name": "tokenId",
+                "type": "uint256"
+              }
+            ],
+            "name": "sertifikatExists",
+            "outputs": [
+              {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+              }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+          },
+          {
+            "inputs": [
+              {
+                "internalType": "address",
+                "name": "newAdmin",
+                "type": "address"
+              }
+            ],
+            "name": "setAdmin",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+          },
+          {
+            "inputs": [
+              {
+                "internalType": "address",
+                "name": "operator",
+                "type": "address"
+              },
+              {
+                "internalType": "bool",
+                "name": "approved",
+                "type": "bool"
+              }
+            ],
+            "name": "setApprovalForAll",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+          },
+          {
+            "inputs": [
+              {
+                "internalType": "bytes4",
+                "name": "interfaceId",
+                "type": "bytes4"
+              }
+            ],
+            "name": "supportsInterface",
+            "outputs": [
+              {
+                "internalType": "bool",
+                "name": "",
+                "type": "bool"
+              }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+          },
+          {
+            "inputs": [],
+            "name": "symbol",
+            "outputs": [
+              {
+                "internalType": "string",
+                "name": "",
+                "type": "string"
+              }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+          },
+          {
+            "inputs": [
+              {
+                "internalType": "uint256",
+                "name": "tokenId",
+                "type": "uint256"
+              }
+            ],
+            "name": "tokenURI",
+            "outputs": [
+              {
+                "internalType": "string",
+                "name": "",
+                "type": "string"
+              }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+          },
+          {
+            "inputs": [
+              {
+                "internalType": "address",
+                "name": "from",
+                "type": "address"
+              },
+              {
+                "internalType": "address",
+                "name": "to",
+                "type": "address"
+              },
+              {
+                "internalType": "uint256",
+                "name": "tokenId",
+                "type": "uint256"
+              }
+            ],
+            "name": "transferFrom",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+          },
+          {
+            "inputs": [
+              {
+                "internalType": "address",
+                "name": "newOwner",
+                "type": "address"
+              }
+            ],
+            "name": "transferOwnership",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+          }
+        ],
+        "gas": {
+          "addMinter": 150000,
+          "removeMinter": 150000,
+          "mint": 900000,
+          "burn": 400000
         }
       }
     }

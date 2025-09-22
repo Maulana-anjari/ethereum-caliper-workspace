@@ -37,8 +37,10 @@ class LamReadWorkload extends WorkloadModuleBase {
       Math.floor(Math.random() * totalTokens) +
       (this.roundArguments.tokenIdOffset || 1);
 
+    const contractName = "SertifikatLam";
     const request = {
-      contractId: "SertifikatLam",
+      contract: contractName,
+      contractId: contractName,
       verb: "getSertifikat",
       args: [randomTokenId],
       readOnly: true,

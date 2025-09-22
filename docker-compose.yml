@@ -26,7 +26,7 @@ services:
     # Memetakan port internal 5432 dari kontainer ke port 5432 di mesin host Anda.
     # Ini memungkinkan Anda untuk terhubung ke database dari aplikasi di luar Docker (misal: DBeaver, pgAdmin).
     ports:
-      - "${POSTGRES_HOST_PORT:-5433}:5432"
+      - "${POSTGRES_HOST_PORT:-5432}:5432"
 
     # Menggunakan 'named volume' untuk persistensi data.
     # Ini sangat penting agar data database Anda tidak hilang saat kontainer dihapus atau dibuat ulang.

@@ -59,8 +59,10 @@ class LamMintWorkload extends WorkloadModuleBase {
       sender,
     ];
 
+    const contractName = "SertifikatLam";
     const request = {
-      contractId: "SertifikatLam",
+      contract: contractName,
+      contractId: contractName,
       verb: "mint",
       args,
       readOnly: false,

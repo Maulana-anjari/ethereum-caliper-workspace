@@ -13,11 +13,14 @@ class SimpleStorageWorkload extends WorkloadModuleBase {
     const operation = this.roundArguments.operation;
     let request;
 
+    const contractName = "SimpleStorage";
+
     if (operation === "set") {
       // Operasi tulis: menyimpan angka berdasarkan indeks transaksi
       const valueToSet = this.txIndex;
       request = {
-        contractId: "SimpleStorage",
+        contract: contractName,
+        contractId: contractName,
         verb: "set",
         args: [valueToSet],
         readOnly: false,
@@ -25,7 +28,8 @@ class SimpleStorageWorkload extends WorkloadModuleBase {
     } else if (operation === "get") {
       // Operasi baca
       request = {
-        contractId: "SimpleStorage",
+        contract: contractName,
+        contractId: contractName,
         verb: "get",
         args: [],
         readOnly: true,
