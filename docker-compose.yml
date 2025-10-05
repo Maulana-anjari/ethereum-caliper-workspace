@@ -1,40 +1,20 @@
-# Docker Compose file for PostgreSQL service
 version: "3.8"
 
 services:
-  # Definisi layanan untuk database PostgreSQL
   postgreskripsi:
-    # Menggunakan image resmi PostgreSQL. Menggunakan versi spesifik (misal: 17) lebih disarankan daripada 'latest' untuk reprodusibilitas.
     image: postgres:17-alpine
-
-    # Memberikan nama spesifik pada kontainer sesuai permintaan Anda.
-    # Nama ini juga berfungsi sebagai hostname di dalam jaringan Docker.
     container_name: postgreskripsi
-
-    # Kebijakan restart: akan selalu memulai ulang kontainer kecuali jika dihentikan secara manual.
     restart: unless-stopped
-
-    # Mengatur environment variables di dalam kontainer.
-    # Nilai diambil dari file .env yang ada di direktori yang sama.
     env_file:
       - .env
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_DB: ${POSTGRES_DB:-postgreskripsi}
-
-    # Memetakan port internal 5432 dari kontainer ke port 5432 di mesin host Anda.
-    # Ini memungkinkan Anda untuk terhubung ke database dari aplikasi di luar Docker (misal: DBeaver, pgAdmin).
     ports:
       - "${POSTGRES_HOST_PORT:-5432}:5432"
-
-    # Menggunakan 'named volume' untuk persistensi data.
-    # Ini sangat penting agar data database Anda tidak hilang saat kontainer dihapus atau dibuat ulang.
     volumes:
       - postgres_data:/var/lib/postgresql/data
-
-    # Menghubungkan kontainer ini ke jaringan kustom (opsional, tapi praktik yang baik).
-    # Ganti 'geth-network' jika Anda menggunakan nama jaringan lain.
     networks:
       - geth-network
     healthcheck:
@@ -43,12 +23,59 @@ services:
       timeout: 5s
       retries: 10
 
-# Mendefinisikan 'named volume' yang digunakan oleh layanan di atas.
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: caliper_prometheus
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "${PROMETHEUS_HOST_PORT:-9090}:9090"
+    networks:
+      - geth-network
+
+  pushgateway:
+    image: prom/pushgateway:latest
+    container_name: caliper_pushgateway
+    restart: unless-stopped
+    ports:
+      - "${PUSHGATEWAY_HOST_PORT:-9091}:9091"
+    networks:
+      - geth-network
+
+  grafana:
+    image: grafana/grafana:10.4.2
+    container_name: caliper_grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin123}
+    ports:
+      - "${GRAFANA_HOST_PORT:-3000}:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
+    networks:
+      - geth-network
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: caliper_node_exporter
+    restart: unless-stopped
+    command:
+      - '--path.rootfs=/host'
+    pid: host
+    network_mode: host
+    volumes:
+      - /:/host:ro
+
 volumes:
   postgres_data:
     driver: local
+  grafana_data:
+    driver: local
 
-# Mendefinisikan jaringan kustom.
 networks:
   geth-network:
     driver: bridge

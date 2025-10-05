@@ -10,3 +10,7 @@ scrape_configs:
     # Prometheus akan mengambil metrik yang dikirim Caliper dari Pushgateway
     static_configs:
       - targets: ["caliper_pushgateway:9091"]
+
+  - job_name: "node_exporter"
+    static_configs:
+      - targets: ["localhost:9100"]

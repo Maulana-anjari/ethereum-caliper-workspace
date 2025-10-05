@@ -58,6 +58,40 @@ if [ -z "$CONSENSUS" ]; then
     log_error "Environment variables not loaded. Ensure .env has been sourced."
 fi
 
+ensure_db_ready() {
+    local host="${PGHOST:-localhost}"
+    local port="${PGPORT:-${POSTGRES_PORT:-5432}}"
+    local container_name="${POSTGRES_CONTAINER_NAME:-postgreskripsi}"
+    local max_attempts=10
+    local wait_seconds=3
+
+    log_action "Checking database readiness"
+
+    if command -v docker >/dev/null 2>&1; then
+        local container_status
+        container_status=$(docker ps --filter "name=${container_name}" --format '{{.Status}}')
+        if [ -z "$container_status" ]; then
+            log_info "Container ${container_name} is not running. Start it with: docker compose up -d ${container_name}"
+        else
+            log_info "Container ${container_name} status: ${container_status}"
+        fi
+    fi
+
+    for attempt in $(seq 1 "$max_attempts"); do
+        if timeout 2 bash -c "</dev/tcp/${host}/${port}" >/dev/null 2>&1; then
+            log_success "Database reachable at ${host}:${port}."
+            return 0
+        fi
+
+        log_info "Database not ready yet (attempt ${attempt}/${max_attempts}). Waiting ${wait_seconds} seconds."
+        sleep "$wait_seconds"
+    done
+
+    log_error "Database unreachable at ${host}:${port}. Ensure Postgres is running and environment variables are correct."
+}
+
+ensure_db_ready
+
 log_action "Cleaning up reports directory"
 rm -rf reports
 mkdir -p reports
@@ -127,7 +161,7 @@ run_benchmark_set() {
             OPTIMAL_TPS_VALUE=$(cat optimal_tps.txt)
         fi
         if [ -z "$OPTIMAL_TPS_VALUE" ]; then
-            log_error "Scenario ${SCENARIO_ID} membutuhkan nilai optimal TPS. Jalankan skenario 'A' terlebih dahulu atau set OPTIMAL_TPS_OVERRIDE."
+            log_error "Scenario ${SCENARIO_ID} requires an optimal TPS value. Run scenario 'A' first or set OPTIMAL_TPS_OVERRIDE."
         fi
         GENERATOR_ARGS+=(--optimalTps="${OPTIMAL_TPS_VALUE}")
     fi
@@ -167,11 +201,11 @@ run_benchmark_set() {
         if EXPERIMENT_VARIANT_LABEL=${VARIANT_SAFE} node analyze-report.js "${REPORT_PATH}"; then
             if [ -f optimal_tps.txt ]; then
                 OPTIMAL_TPS_VALUE=$(cat optimal_tps.txt)
-                log_info "Optimal TPS diperbarui ke ${OPTIMAL_TPS_VALUE}"
+                log_info "Optimal TPS updated to ${OPTIMAL_TPS_VALUE}"
                 cp optimal_tps.txt "reports/optimal_tps-${SCENARIO_TAG}-trial-${TRIAL_NUM_ARG}.txt"
             fi
         else
-            log_error "Analisis skenario A gagal. Periksa laporan ${REPORT_PATH}."
+            log_error "Scenario A analysis failed. Check report ${REPORT_PATH}."
         fi
     fi
 }
@@ -227,6 +261,6 @@ for VARIANT in "${EXPERIMENT_VARIANTS[@]}"; do
 done
 
 log_step "PIPELINE FINISHED"
-echo -e "${C_GREEN}=======================================================${C_NC}"
-echo -e "${C_GREEN}  All benchmark scenarios completed successfully.      ${C_NC}"
-echo -e "${C_GREEN}=======================================================${C_NC}"
+printf '%b\n' "${C_GREEN}=======================================================${C_NC}"
+printf '%b\n' "${C_GREEN}  All benchmark scenarios completed successfully.      ${C_NC}"
+printf '%b\n' "${C_GREEN}=======================================================${C_NC}"

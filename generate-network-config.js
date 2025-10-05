@@ -87,6 +87,7 @@ const mainAccount = accounts[0];
 // Siapkan array 'wallets' untuk semua kunci privat yang akan digunakan oleh worker
 const wallets = accounts.map((acc) => ({
   privateKey: acc.privateKey,
+  address: acc.address,
 }));
 
 const networkConfig = {

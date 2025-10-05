@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   caliper-db:
-    image: postgres:14
+    image: postgres:17
     container_name: caliper_db
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-caliper_db}

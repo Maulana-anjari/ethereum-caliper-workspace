@@ -1,12 +1,14 @@
 "use strict";
 
 const { WorkloadModuleBase } = require("@hyperledger/caliper-core");
+const { resolveAccounts } = require("./account-utils");
 
 class LamBurnWorkload extends WorkloadModuleBase {
   constructor() {
     super();
     this.txIndex = 0;
     this.accounts = [];
+    this.selectedAccount = undefined;
   }
 
   async initializeWorkloadModule(
@@ -26,23 +28,25 @@ class LamBurnWorkload extends WorkloadModuleBase {
       sutContext
     );
 
-    this.accounts = await this.sutAdapter.web3.eth.getAccounts();
-    if (this.accounts.length === 0) {
+    this.accounts = await resolveAccounts(this.sutAdapter.web3, totalWorkers);
+    if (this.accounts.length < totalWorkers) {
       throw new Error(
-        `Worker ${this.workerIndex}: tidak menemukan akun untuk burn.`
+        `Worker ${this.workerIndex}: expected at least ${totalWorkers} funded accounts, but only ${this.accounts.length} are available for burning.`
       );
     }
 
     if (!this.roundArguments.tokensPerWorker || this.roundArguments.tokensPerWorker <= 0) {
       throw new Error(
-        "Lam burn workload membutuhkan parameter 'tokensPerWorker' > 0."
+        "Lam burn workload requires a 'tokensPerWorker' argument greater than 0."
       );
     }
+
+    this.selectedAccount = this.accounts[this.workerIndex % this.accounts.length];
   }
 
   async submitTransaction() {
     this.txIndex++;
-    const sender = this.accounts[this.workerIndex % this.accounts.length];
+    const sender = this.selectedAccount;
 
     const startTokenId = this.roundArguments.startTokenId || 1;
     const tokensPerWorker = this.roundArguments.tokensPerWorker;

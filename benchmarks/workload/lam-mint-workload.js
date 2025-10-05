@@ -1,12 +1,14 @@
 "use strict";
 
 const { WorkloadModuleBase } = require("@hyperledger/caliper-core");
+const { resolveAccounts } = require("./account-utils");
 
 class LamMintWorkload extends WorkloadModuleBase {
   constructor() {
     super();
     this.txIndex = 0;
     this.accounts = [];
+    this.selectedAccount = undefined;
   }
 
   async initializeWorkloadModule(
@@ -25,17 +27,19 @@ class LamMintWorkload extends WorkloadModuleBase {
       sutAdapter,
       sutContext
     );
-    this.accounts = await this.sutAdapter.web3.eth.getAccounts();
-    if (this.accounts.length === 0) {
+    this.accounts = await resolveAccounts(this.sutAdapter.web3, totalWorkers);
+    if (this.accounts.length < totalWorkers) {
       throw new Error(
-        `Worker ${this.workerIndex}: tidak menemukan akun untuk mengirim transaksi.`
+        `Worker ${this.workerIndex}: expected at least ${totalWorkers} funded accounts, but only ${this.accounts.length} are available for minting.`
       );
     }
+
+    this.selectedAccount = this.accounts[this.workerIndex % this.accounts.length];
   }
 
   async submitTransaction() {
     this.txIndex++;
-    const sender = this.accounts[this.workerIndex % this.accounts.length];
+    const sender = this.selectedAccount;
 
     const batchId = this.roundArguments.batchId || "BATCH";
     const uniqueId = `${batchId}-${this.workerIndex}-${this.txIndex}`;

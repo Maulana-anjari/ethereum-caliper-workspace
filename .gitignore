@@ -4,4 +4,12 @@ report.html
 keystore_for_test.json
 .env
 deployed-contracts.json
-networks/ethereum-poa-config.json
+networks/ethereum-poa-config.json# Runtime outputs
+.env
+keystores/
+reports/
+deployed-contracts.json
+benchmarks/*-benchmark.yaml
+networks/ethereum-*-config.json
+optimal_tps.txt
+reports/optimal_tps-*.txt

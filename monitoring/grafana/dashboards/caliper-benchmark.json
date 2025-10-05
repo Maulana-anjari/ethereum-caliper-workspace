@@ -1,0 +1,268 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Throughput (TPS)",
+      "id": 1,
+      "gridPos": { "h": 7, "w": 6, "x": 0, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "caliper-prometheus" },
+      "targets": [
+        {
+          "expr": "sum(rate(caliper_tx_finished{scenario=~\"$scenario\",variant=~\"$variant\",roundLabel=~\"$round\"}[1m]))",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [ { "color": "green", "value": null }, { "color": "red", "value": 20 } ]
+          }
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Total Finished Transactions",
+      "id": 2,
+      "gridPos": { "h": 7, "w": 6, "x": 6, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "caliper-prometheus" },
+      "targets": [
+        {
+          "expr": "sum(caliper_tx_finished{scenario=~\"$scenario\",variant=~\"$variant\",roundLabel=~\"$round\"})",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "graphMode": "none",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "value"
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Total Submitted Transactions",
+      "id": 3,
+      "gridPos": { "h": 7, "w": 6, "x": 12, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "caliper-prometheus" },
+      "targets": [
+        {
+          "expr": "sum(caliper_tx_submitted{scenario=~\"$scenario\",variant=~\"$variant\",roundLabel=~\"$round\"})",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "graphMode": "none",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "value"
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Success Ratio",
+      "id": 4,
+      "gridPos": { "h": 7, "w": 6, "x": 18, "y": 0 },
+      "datasource": { "type": "prometheus", "uid": "caliper-prometheus" },
+      "targets": [
+        {
+          "expr": "sum(caliper_tx_finished{scenario=~\"$scenario\",variant=~\"$variant\",roundLabel=~\"$round\"}) / sum(caliper_tx_submitted{scenario=~\"$scenario\",variant=~\"$variant\",roundLabel=~\"$round\"})",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": { "unit": "percentunit", "min": 0, "max": 1 },
+        "overrides": []
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Throughput per Worker",
+      "id": 5,
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 7 },
+      "datasource": { "type": "prometheus", "uid": "caliper-prometheus" },
+      "targets": [
+        {
+          "expr": "sum by (workerIndex) (rate(caliper_tx_finished{scenario=~\"$scenario\",variant=~\"$variant\",roundLabel=~\"$round\"}[1m]))",
+          "legendFormat": "Finished worker {{workerIndex}}",
+          "refId": "A"
+        },
+        {
+          "expr": "sum by (workerIndex) (rate(caliper_tx_submitted{scenario=~\"$scenario\",variant=~\"$variant\",roundLabel=~\"$round\"}[1m]))",
+          "legendFormat": "Submitted worker {{workerIndex}}",
+          "refId": "B"
+        }
+      ],
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom" }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Latency Quantiles (seconds)",
+      "id": 6,
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 7 },
+      "datasource": { "type": "prometheus", "uid": "caliper-prometheus" },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, sum(rate(caliper_tx_e2e_latency_bucket{scenario=~\"$scenario\",variant=~\"$variant\",roundLabel=~\"$round\"}[1m])) by (le))",
+          "legendFormat": "p50",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(caliper_tx_e2e_latency_bucket{scenario=~\"$scenario\",variant=~\"$variant\",roundLabel=~\"$round\"}[1m])) by (le))",
+          "legendFormat": "p95",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Worker Summary (Last 5m)",
+      "id": 7,
+      "gridPos": { "h": 7, "w": 12, "x": 0, "y": 16 },
+      "datasource": { "type": "prometheus", "uid": "caliper-prometheus" },
+      "targets": [
+        {
+          "expr": "sum by (workerIndex) (increase(caliper_tx_finished{scenario=~\"$scenario\",variant=~\"$variant\",roundLabel=~\"$round\"}[5m]))",
+          "format": "table",
+          "refId": "A"
+        },
+        {
+          "expr": "sum by (workerIndex) (increase(caliper_tx_submitted{scenario=~\"$scenario\",variant=~\"$variant\",roundLabel=~\"$round\"}[5m]))",
+          "format": "table",
+          "refId": "B"
+        }
+      ],
+      "transformations": [
+        { "id": "merge", "options": {} },
+        {
+          "id": "organize",
+          "options": {
+            "renameByName": {
+              "Value #A": "Finished",
+              "Value #B": "Submitted"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Container CPU Usage",
+      "id": 8,
+      "gridPos": { "h": 7, "w": 12, "x": 12, "y": 16 },
+      "datasource": { "type": "prometheus", "uid": "caliper-prometheus" },
+      "targets": [
+        {
+          "expr": "sum by (container) (rate(container_cpu_usage_seconds_total{container=~\"$container\",image!=\"\"}[1m]))",
+          "legendFormat": "{{container}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "cores"
+        },
+        "overrides": []
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Container Memory Usage",
+      "id": 9,
+      "gridPos": { "h": 7, "w": 12, "x": 0, "y": 23 },
+      "datasource": { "type": "prometheus", "uid": "caliper-prometheus" },
+      "targets": [
+        {
+          "expr": "sum by (container) (container_memory_usage_bytes{container=~\"$container\",image!=\"\"})",
+          "legendFormat": "{{container}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
+        },
+        "overrides": []
+      }
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": ["caliper", "benchmark"],
+  "templating": {
+    "list": [
+      {
+        "name": "scenario",
+        "type": "query",
+        "datasource": { "type": "prometheus", "uid": "caliper-prometheus" },
+        "query": "label_values(caliper_tx_finished, scenario)",
+        "includeAll": true,
+        "multi": false,
+        "current": { "text": "All", "value": ".*" }
+      },
+      {
+        "name": "variant",
+        "type": "query",
+        "datasource": { "type": "prometheus", "uid": "caliper-prometheus" },
+        "query": "label_values(caliper_tx_finished{scenario=~\"$scenario\"}, variant)",
+        "includeAll": true,
+        "multi": false,
+        "current": { "text": "All", "value": ".*" }
+      },
+      {
+        "name": "round",
+        "type": "query",
+        "datasource": { "type": "prometheus", "uid": "caliper-prometheus" },
+        "query": "label_values(caliper_tx_finished{scenario=~\"$scenario\",variant=~\"$variant\"}, roundLabel)",
+        "includeAll": true,
+        "multi": false,
+        "current": { "text": "All", "value": ".*" }
+      },
+      {
+        "name": "container",
+        "type": "query",
+        "datasource": { "type": "prometheus", "uid": "caliper-prometheus" },
+        "query": "label_values(container_cpu_usage_seconds_total{container!=\"\",image!=\"\"}, container)",
+        "includeAll": false,
+        "multi": true,
+        "current": { "text": "caliper_benchmark", "value": ["caliper_benchmark"] }
+      }
+    ]
+  },
+  "time": { "from": "now-30m", "to": "now" },
+  "title": "Caliper Benchmark Overview",
+  "uid": "caliper-overview",
+  "version": 3
+}
