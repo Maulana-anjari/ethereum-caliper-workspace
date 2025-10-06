@@ -50,8 +50,9 @@ for (const contractName in deployedAddresses) {
 
   // Sesuaikan gas limit berdasarkan nama kontrak
   if (contractName === "CpuStressTest") {
+    const cpuGasLimit = parseInt(process.env.CONTRACT_GAS_CPU_calculate || '1200000', 10);
     contractInfo.gas = {
-      calculate: 500000,
+      calculate: cpuGasLimit,
     };
   } else if (contractName === "MintCertificate") {
     contractInfo.gas = {

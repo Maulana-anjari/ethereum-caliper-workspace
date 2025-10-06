@@ -133,7 +133,7 @@
           "rateControl": {
             "type": "fixed-rate",
             "opts": {
-              "tps": 30
+              "tps": "ENV:LAM_MINT_TPS:8"
             }
           },
           "workload": {
@@ -156,7 +156,7 @@
           "rateControl": {
             "type": "fixed-rate",
             "opts": {
-              "tps": 60
+              "tps": "ENV:LAM_READ_TPS:60"
             }
           },
           "workload": {
@@ -175,14 +175,14 @@
           "rateControl": {
             "type": "fixed-rate",
             "opts": {
-              "tps": 10
+              "tps": "ENV:LAM_BURN_TPS:10"
             }
           },
           "workload": {
             "module": "benchmarks/workload/lam-burn-workload.js",
             "arguments": {
               "startTokenId": 1,
-              "tokensPerWorker": 10
+              "tokensPerWorker": "ENV:LAM_BURN_TOKENS_PER_WORKER:10"
             }
           }
         }

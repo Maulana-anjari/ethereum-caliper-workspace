@@ -196,8 +196,8 @@ run_benchmark_set() {
         EXPERIMENT_VARIANT_LABEL=${VARIANT_SAFE} "$HOOK_SCRIPT" post "${VARIANT_SAFE}" "${TRIAL_NUM_ARG}" || log_error "Post-hook for ${SCENARIO_ID} failed"
     fi
 
-    if [ "$SCENARIO_ID" = "A" ]; then
-        log_action "Analyzing scenario A results to determine optimal TPS"
+    if [ "$SCENARIO_ID" = "throughput-step" ]; then
+        log_action "Analyzing throughput-step results to determine optimal TPS"
         if EXPERIMENT_VARIANT_LABEL=${VARIANT_SAFE} node analyze-report.js "${REPORT_PATH}"; then
             if [ -f optimal_tps.txt ]; then
                 OPTIMAL_TPS_VALUE=$(cat optimal_tps.txt)
@@ -205,7 +205,7 @@ run_benchmark_set() {
                 cp optimal_tps.txt "reports/optimal_tps-${SCENARIO_TAG}-trial-${TRIAL_NUM_ARG}.txt"
             fi
         else
-            log_error "Scenario A analysis failed. Check report ${REPORT_PATH}."
+            log_error "throughput-step analysis failed. Check report ${REPORT_PATH}."
         fi
     fi
 }
