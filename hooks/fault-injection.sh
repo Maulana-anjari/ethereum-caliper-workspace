@@ -27,6 +27,26 @@ DELAY=${FAULT_INJECT_DELAY:-120}
 LOG_FILE=${FAULT_INJECT_LOG_FILE:-/tmp/fault-${VARIANT}-${TRIAL}.log}
 
 SSH_TARGET=${FAULT_INJECT_SSH_TARGET:-}
+ENV_FILES_RAW=${FAULT_INJECT_ENV_FILES:-}
+
+COMPOSE_DIR=$(dirname "$COMPOSE_FILE")
+COMPOSE_NAME=$(basename "$COMPOSE_FILE")
+
+build_env_args() {
+  local args=()
+  if [ -n "$ENV_FILES_RAW" ]; then
+    # Allow either space or comma separated list
+    local IFS=$' ,'
+    for entry in $ENV_FILES_RAW; do
+      if [ -n "$entry" ]; then
+        args+=("--env-file" "$entry")
+      fi
+    done
+  fi
+  printf '%s\n' "${args[@]}"
+}
+
+ENV_ARGS=($(build_env_args))
 
 when_remote() {
   [ -n "$SSH_TARGET" ]
@@ -38,11 +58,18 @@ run_remote() {
 
 run_compose() {
   if when_remote; then
-    local quoted_args
-    quoted_args=$(printf " %q" "$@")
-    run_remote "docker compose -f '$COMPOSE_FILE'$quoted_args"
+    local cmd="cd '$COMPOSE_DIR' && docker compose"
+    for arg in "${ENV_ARGS[@]}"; do
+      cmd+=" $(printf '%q' "$arg")"
+    done
+    cmd+=" -f '$COMPOSE_NAME'"
+    while [ "$#" -gt 0 ]; do
+      cmd+=" $(printf '%q' "$1")"
+      shift
+    done
+    run_remote "$cmd"
   else
-    docker compose -f "$COMPOSE_FILE" "$@"
+    ( cd "$COMPOSE_DIR" && docker compose "${ENV_ARGS[@]}" -f "$COMPOSE_NAME" "$@" )
   fi
 }
 
@@ -83,10 +110,14 @@ case "$PHASE" in
   pre)
     echo "[hook fault-injection] scheduling stop of ${TARGET_SERVICE} in ${DELAY}s (variant=${VARIANT}, trial=${TRIAL})"
     if when_remote; then
-      stop_cmd="sleep $DELAY && docker compose -f '$COMPOSE_FILE' stop '$TARGET_SERVICE' >'$LOG_FILE' 2>&1"
+      stop_cmd="cd '$COMPOSE_DIR' && sleep $DELAY && docker compose"
+      for arg in "${ENV_ARGS[@]}"; do
+        stop_cmd+=" $(printf '%q' "$arg")"
+      done
+      stop_cmd+=" -f '$COMPOSE_NAME' stop '$TARGET_SERVICE' >'$LOG_FILE' 2>&1"
       ( run_remote "$stop_cmd" ) &
     else
-      ( sleep "$DELAY" && docker compose -f "$COMPOSE_FILE" stop "$TARGET_SERVICE" >"$LOG_FILE" 2>&1 ) &
+      ( cd "$COMPOSE_DIR" && sleep "$DELAY" && docker compose "${ENV_ARGS[@]}" -f "$COMPOSE_NAME" stop "$TARGET_SERVICE" >"$LOG_FILE" 2>&1 ) &
     fi
     ;;
   post)
