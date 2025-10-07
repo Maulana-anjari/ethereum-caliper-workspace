@@ -88,3 +88,6 @@ Hook pre/post dapat ditempatkan di folder `hooks/` dengan nama `<SCENARIO>.sh`, 
 
 - Gunakan skenario `LAM` untuk rangkaian mint/baca/burn Sertifikat LAM (butuh hasil mint untuk menentukan `totalTokens` dan rentang burn`).
 - Ubah `CORE_SCENARIOS` di `.env` atau panggil generator benchmark dengan `--scenario` yang diinginkan (lihat `scenarios.json`).
+
+Ekstrak address dan private key PoS
+node scripts/extract-kurtosis-accounts.js | jq -c '.'

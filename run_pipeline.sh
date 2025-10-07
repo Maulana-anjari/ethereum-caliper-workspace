@@ -98,36 +98,40 @@ mkdir -p reports
 log_success "Directory 'reports' is clean and ready."
 
 log_step "KEY EXTRACTION & CONFIGURATION"
-log_action "Preparing keystore for key extraction"
-if [ -n "${KEYSTORE_SRC_PATHS}" ]; then
-    IFS=',' read -r -a KS_PATHS_ARR <<< "${KEYSTORE_SRC_PATHS}"
-    for p in "${KS_PATHS_ARR[@]}"; do
-        p_trimmed="${p//$'\n'/}"
-        p_trimmed="${p_trimmed//$'\r'/}"
-        if [ ! -d "$p_trimmed" ] || [ -z "$(ls -A "$p_trimmed")" ]; then
-            log_error "Keystore directory not found or empty: '$p_trimmed'"
-        fi
-    done
-    log_success "All keystore paths verified: ${KEYSTORE_SRC_PATHS}"
-    log_action "Extracting all addresses & private keys (multi-keystore)"
-    ACCOUNTS_JSON=$(node getPrivateKey.js "${KEYSTORE_SRC_PATHS}" "${KEYSTORE_PASSWORDS:-$KEYSTORE_PASSWORD}")
+if [ -n "${ACCOUNTS_JSON}" ] && [ "${FORCE_KEYSTORE_EXTRACTION:-false}" != "true" ]; then
+    log_info "ACCOUNTS_JSON sudah tersedia di environment, lewati proses ekstraksi keystore."
 else
-    KEYSTORE_SRC_DIR="${KEYSTORE_SRC_PATH}"
-    if [ ! -d "$KEYSTORE_SRC_DIR" ] || [ -z "$(ls -A "$KEYSTORE_SRC_DIR")" ]; then
-        log_error "Source keystore directory not found or is empty in '${KEYSTORE_SRC_DIR}'"
+    log_action "Preparing keystore for key extraction"
+    if [ -n "${KEYSTORE_SRC_PATHS}" ]; then
+        IFS=',' read -r -a KS_PATHS_ARR <<< "${KEYSTORE_SRC_PATHS}"
+        for p in "${KS_PATHS_ARR[@]}"; do
+            p_trimmed="${p//$'\n'/}"
+            p_trimmed="${p_trimmed//$'\r'/}"
+            if [ ! -d "$p_trimmed" ] || [ -z "$(ls -A "$p_trimmed")" ]; then
+                log_error "Keystore directory not found or empty: '$p_trimmed'"
+            fi
+        done
+        log_success "All keystore paths verified: ${KEYSTORE_SRC_PATHS}"
+        log_action "Extracting all addresses & private keys (multi-keystore)"
+        ACCOUNTS_JSON=$(node getPrivateKey.js "${KEYSTORE_SRC_PATHS}" "${KEYSTORE_PASSWORDS:-$KEYSTORE_PASSWORD}")
+    else
+        KEYSTORE_SRC_DIR="${KEYSTORE_SRC_PATH}"
+        if [ ! -d "$KEYSTORE_SRC_DIR" ] || [ -z "$(ls -A "$KEYSTORE_SRC_DIR")" ]; then
+            log_error "Source keystore directory not found or is empty in '${KEYSTORE_SRC_DIR}'"
+        fi
+        log_success "Keystore found at mounted path: ${KEYSTORE_SRC_DIR}"
+        log_action "Extracting all addresses & private keys"
+        ACCOUNTS_JSON=$(node getPrivateKey.js "${KEYSTORE_SRC_DIR}" "${KEYSTORE_PASSWORD}")
     fi
-    log_success "Keystore found at mounted path: ${KEYSTORE_SRC_DIR}"
-    log_action "Extracting all addresses & private keys"
-    ACCOUNTS_JSON=$(node getPrivateKey.js "${KEYSTORE_SRC_DIR}" "${KEYSTORE_PASSWORD}")
-fi
 
-if [ -z "$ACCOUNTS_JSON" ]; then
-    log_error "Failed to extract private keys"
+    if [ -z "$ACCOUNTS_JSON" ]; then
+        log_error "Failed to extract private keys"
+    fi
 fi
 
 MAIN_ADDRESS=$(echo "$ACCOUNTS_JSON" | jq -r '.[0].address')
 export ACCOUNTS_JSON ADDRESS=${MAIN_ADDRESS}
-log_success "Extracted keys. Main address: ${MAIN_ADDRESS} | Total accounts: $(echo "$ACCOUNTS_JSON" | jq -r 'length')"
+log_success "Main address: ${MAIN_ADDRESS} | Total accounts: $(echo "$ACCOUNTS_JSON" | jq -r 'length')"
 
 run_benchmark_set() {
     local SCENARIO_ID=$1
