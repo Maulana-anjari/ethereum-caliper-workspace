@@ -13,3 +13,5 @@ benchmarks/*-benchmark.yaml
 networks/ethereum-*-config.json
 optimal_tps.txt
 reports/optimal_tps-*.txt
+variants/*.env
+!variants/.gitkeep
